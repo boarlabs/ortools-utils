@@ -33,7 +33,6 @@ message ReferenceMPVariable {
 
     repeated string tags = 11;
 
-
 }
 
 
@@ -57,7 +56,7 @@ message MPExpression {
 
 
 
-message ExtendedMPModelProto {
+message ExpressionMPModel {
     repeated MPVariableProto variable = 3;
   
     repeated MPConstraintProto constraint = 4;
@@ -75,8 +74,16 @@ message ExtendedMPModelProto {
     optional PartialVariableAssignment solution_hint = 6;
 
     repeated MPExpression expressions =11;
-}
 
+    repeated ReferenceMPConstraint reference_constraints =12;
+}
+// initially I just wanted to introduce a regular MPmodel with just expressions added to it,
+// given that an expression is just a (var+constraint) that can be easily added.
+// then brings the question that when do we actually define an expression without putting any relation
+// with other stuff in our model. So then if we need to add constraints to the model that can include 
+// expressions, looks like we need to add reference constraints, which allow us to set constraints by name.
+// it also brings out the question that do we really need to have this type of model separate, as we could
+// define it based on the more general model type. but for now I will keep it as it seems to be simpler.
 
 
 message ReferenceMPConstraint {
@@ -123,9 +130,10 @@ message ReferenceMPModel {
 
 
 message ExtendedMPModel {
-    oneof extended_model {
+    oneof model_type {
         MPModelProto concrete_model =1;
         ReferenceMPModel reference_model =2;
+        ExpressionMPModel expression_model =3;
     }
 
 }
