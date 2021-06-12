@@ -8,6 +8,8 @@ from linear_extension_pb2 import(
     ExpressionMPModel,
     ReferenceMPVariable,
     MPExpression,
+    ReferenceMPModel,
+    ReferenceMPConstraint,
 )
 
 
@@ -201,36 +203,86 @@ class Collection:
         self,
         interval_set,
         params: dict,
-        ):
+    ):
         super().__init__()
+
+        self.mipmodel = ReferenceMPModel()
 
         ## Setup
         self.id = params["name"]
         self.objective_terms = {}
 
-        self.block = aml.Block(concrete=True)
+        self.mipmodel.name = self.id
 
-        # Need to reference interval set in coupling method, either need to add it to class or pass it to function.
+
         self.interval_set = interval_set
 
         self.component_element_ids = params["component_element_names"] # resources or other collections
 
         ## Parameters
-        self.block.import_limit = params["import_limit"] # assume positive
-        self.block.export_limit = params["export_limit"]
+        self.import_limit = params["import_limit"] # assume positive
+        self.export_limit = params["export_limit"]
 
-        ## Expressions/Variables
-        # Should we define net_export as a variable and set equal later - allows to define upper and lower bounds here
-        # or should it be an expression here, and we reconstruct constraints later whenever we add elements - i.e. the coupling aspect of the problem
-        # It really depends on how the model is "constructed" - one option is to define everything as constructor functions that are called when the model is constructed, but order of construction matters here!
-        # If we define as a variable, then we decouple them. 
         
-        self.block.net_export = aml.Var(interval_set, bounds = (-self.block.import_limit,self.block.export_limit))
+        self.net_export = [
+            MPVariableProto(
+                lower_bound = -self.import_limit,
+                upper_bound = self.export_limit,
+                name = f"net_export[{idx}]"
+            ) for idx in interval_set
+        ]
 
-    def update_coupling_constraints(self):
-        
-        def _coupling_net_export(b,idx):
-            sum_of_component_element_net_exports_idx = sum(getattr(b.parent_block(),component_element_id).net_export[idx] for component_element_id in self.component_element_ids)
-            return b.net_export[idx] - sum_of_component_element_net_exports_idx == 0
 
-        self.block.con_coupling_net_export = aml.Constraint(self.interval_set, rule=_coupling_net_export)
+        for item in self.net_export: self.mipmodel.variables.add(item)
+
+        ### Can we have some reference vars that are added to model but not used in any constraints?
+        ## if it can happen, then should we check to remove before passing?
+
+        self.collection_components_net_exports = [
+            ReferenceMPVariable(
+                var_name = f"net_export[{idx}]",
+                model_name = "parent.{component_element}",
+            ) for idx in interval_set for component_element in self.component_element_ids 
+        ]
+        # toDo for the wild character should I go for ..* or container.conetnts, parent.children... 
+        # note that when defining a model with wild-chars, then we would be facing multiple(Or maybe none)
+        # with such description.
+
+
+        # toDO: I could assign a name to the reference variables and then assign the expressions based on name
+
+        for item in self.collection_components_net_exports: self.mipmodel.reference_variables.add(item)
+
+        self.sum_of_component_net_exports= [ 
+            MPExpression(
+                name = f"sum_of_component_net_exports[{idx}]",
+                variables = self.collection_components_net_exports,    
+                variable_coefficients = [1]*len(self.collection_components_net_exports),
+            ) for idx in interval_set
+
+        ]
+
+        for item in self.sum_of_component_net_exports: self.mipmodel.expressions.add(item)
+
+
+        # toDo here we are creating an expression based on some variables that each of them could actually be multiple 
+        # ones, based on the wild-char defenition we included in the past segment. So in that case, the coeff defined 
+        # for such vars, should be extended for all of them.
+
+        # def update_coupling_constraints(self):
+            
+        #     def _coupling_net_export(b,idx):
+        #         sum_of_component_element_net_exports_idx = sum(getattr(b.parent_block(),component_element_id).net_export[idx] for component_element_id in self.component_element_ids)
+        #         return b.net_export[idx] - sum_of_component_element_net_exports_idx == 0
+
+        self.con_coupling_net_export = [
+            ReferenceMPConstraint(
+                lower_bound = 0,
+                upper_bound = 0,
+                name = f"con_coupling_net_export[{idx}]",
+                ref_var_coefficients = [-1],
+                variable_references = [self.sum_of_component_net_exports[idx]],
+                variables = [self.net_export[idx]],
+                var_coefficients = [1],
+            ) for idx in interval_set
+        ]
