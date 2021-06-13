@@ -41,7 +41,8 @@ class Load:
             ) for idx in interval_set
         ]
 
-        [self.mipmodel.variable.add(var) for var in self.net_export]
+        # [self.mipmodel.variable.add(var) for var in self.net_export]
+        self.mipmodel.variable.extend(self.net_export)
 
 
 
@@ -71,12 +72,13 @@ class Generator:
         self.output = [
             MPVariableProto(
                 lower_bound = 0,
-                upper_bound = self.maxMW[idx],
+                upper_bound = self.maxMW,
                 name = "output["+ str(idx)+"]",
             ) for idx in interval_set
         ] 
         # [self.mipmodel.variable.add(var) for var in self.output]
-        for var in self.output: self.mipmodel.variable.add(var) 
+        # for var in self.output: 
+        self.mipmodel.variable.extend(self.output)
 
 
         self.commit = [
@@ -88,7 +90,8 @@ class Generator:
             ) for idx in interval_set
         ] 
 
-        for var in self.commit: self.mipmodel.variable.add(var)
+        # for var in self.commit: 
+        self.mipmodel.variable.extend(self.commit)
 
 
         ## Expressions - this is where we define a common interface for model resource elements
@@ -111,7 +114,8 @@ class Generator:
             ) for idx in interval_set
         ]
 
-        for item in self.ne_export: self.mipmodel.expressions.add(item) 
+        # for item in self.ne_export: 
+        self.mipmodel.expressions.extend(self.net_export)
 
 
         ## Constraints
@@ -131,7 +135,8 @@ class Generator:
             ) for idx in range(len(interval_set))
         ]
 
-        for item in  self.con_output_commit_upper_bound: self.mipmodel.constraint.add(item)
+        # for item in  self.con_output_commit_upper_bound: 
+        self.mipmodel.constraint.extend(self.con_output_commit_upper_bound)
         # def _output_commit_lower_bound(b,idx):
         #     return b.commit[idx] * b.minMW - b.output[idx] <= 0
         # self.block.con_output_commit_lower_bound = aml.Constraint(interval_set, rule=_output_commit_lower_bound)
@@ -189,7 +194,7 @@ class Generator:
         )         
         
         
-        self.mipmodel.expressions.add(self.total_cost)
+        self.mipmodel.expressions.extend([self.total_cost])
 
 
         self.objective_terms["marginal_cost"] = self.total_cost
@@ -207,6 +212,7 @@ class Collection:
         super().__init__()
 
         self.mipmodel = ReferenceMPModel()
+        self.mipmodel.model_dependencies.extend(['parent'])
 
         ## Setup
         self.id = params["name"]
@@ -233,17 +239,26 @@ class Collection:
         ]
 
 
-        for item in self.net_export: self.mipmodel.variables.add(item)
+        # for item in self.net_export: self.mipmodel.variables.add(item)
+        self.mipmodel.variables.extend(self.net_export)
 
         ### Can we have some reference vars that are added to model but not used in any constraints?
         ## if it can happen, then should we check to remove before passing?
 
-        self.collection_components_net_exports = [
-            ReferenceMPVariable(
-                var_name = f"net_export[{idx}]",
-                model_name = "parent.{component_element}",
-            ) for idx in interval_set for component_element in self.component_element_ids 
-        ]
+        self.collection_components_net_exports = list()
+
+        for idx in interval_set:
+
+            self.collection_components_net_exports.append(
+                [
+                    ReferenceMPVariable(
+                        var_name = f"net_export[{idx}]",
+                        model_name = "parent.{component_element}",
+                        )  for component_element in self.component_element_ids 
+                ]
+            ) 
+                
+        
         # toDo for the wild character should I go for ..* or container.conetnts, parent.children... 
         # note that when defining a model with wild-chars, then we would be facing multiple(Or maybe none)
         # with such description.
@@ -251,18 +266,21 @@ class Collection:
 
         # toDO: I could assign a name to the reference variables and then assign the expressions based on name
 
-        for item in self.collection_components_net_exports: self.mipmodel.reference_variables.add(item)
+        # for item in self.collection_components_net_exports: self.mipmodel.reference_variables.add(item)
+        for idx in range(len(interval_set)):
+            self.mipmodel.reference_variables.extend(self.collection_components_net_exports[idx])
 
         self.sum_of_component_net_exports= [ 
             MPExpression(
                 name = f"sum_of_component_net_exports[{idx}]",
-                variables = self.collection_components_net_exports,    
-                variable_coefficients = [1]*len(self.collection_components_net_exports),
-            ) for idx in interval_set
+                variables = self.collection_components_net_exports[idx],    
+                variable_coefficients = [1]*len(self.collection_components_net_exports[idx]),
+            ) for idx in range(len(interval_set))
 
         ]
 
-        for item in self.sum_of_component_net_exports: self.mipmodel.expressions.add(item)
+        # for item in self.sum_of_component_net_exports: self.mipmodel.expressions.add(item)
+        self.mipmodel.expressions.extend(self.sum_of_component_net_exports)
 
 
         # toDo here we are creating an expression based on some variables that each of them could actually be multiple 
@@ -280,9 +298,9 @@ class Collection:
                 lower_bound = 0,
                 upper_bound = 0,
                 name = f"con_coupling_net_export[{idx}]",
-                ref_var_coefficients = [-1],
-                variable_references = [self.sum_of_component_net_exports[idx]],
+                expression_coefficients = [-1],
+                expressions = [self.sum_of_component_net_exports[idx]],
                 variables = [self.net_export[idx]],
                 var_coefficients = [1],
-            ) for idx in interval_set
+            ) for idx in range(len(interval_set))
         ]

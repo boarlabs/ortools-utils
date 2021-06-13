@@ -104,6 +104,13 @@ message ReferenceMPConstraint {
     repeated string variable_names = 16;
     repeated double var_coefficients = 17;
 
+    repeated MPExpression expressions = 20;
+    repeated string expression_names = 21;
+    repeated double expression_coefficients = 22;
+
+
+
+
 
 }
 

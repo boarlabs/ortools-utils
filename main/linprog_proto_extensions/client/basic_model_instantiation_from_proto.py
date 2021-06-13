@@ -16,7 +16,7 @@ from basic_model_defenition_from_proto import(
 
 def instantiate_model():
 
-    data_directory_path = "sample_data"
+    data_directory_path = "./sample_data"
     data_file_name = "asset_data.xlsx"
 
     # Generator names in excel file are non-unique
@@ -28,8 +28,11 @@ def instantiate_model():
     instance.build_final = True
 
     # Sets
-    gen_index = set(gen_data.index)
-    gen_names = [f"gen_name_{idx}" for idx in gen_index]
+    # gen_index = set(gen_data.index)
+    gen_index = range(10)
+    # gen_names = [f"gen_name_{idx}" for idx in gen_index]
+    gen_names = [f"gen_name_{idx}" for idx in range(10)]
+
 
     interval_index = set(load_data.index) ## check this
 
@@ -63,12 +66,14 @@ def instantiate_model():
         gen_model = Generator(interval_index, all_gen_params[idx])
 
         gen_model_list.append(gen_model)
-        instance.model_dependencies.add(gen_model.mipmodel.name)
+        instance.model_dependencies.extend([gen_model.mipmodel.name])
 
     load_model = Load(interval_index, load_params)
+    instance.model_dependencies.extend([load_model.mipmodel.name])
+
 
     collection_model = Collection(interval_index, collection_params)
-    instance.model_dependencies.add(collection_model.mipmodel.name)
+    instance.model_dependencies.extend([collection_model.mipmodel.name])
 
     ## Model construction
 
@@ -79,16 +84,16 @@ def instantiate_model():
         gen_model_extended = ExtendedMPModel()
         gen_model_request = ReferenceMPModelRequest()
         
-        gen_model_extended.expression_model = gen_model.mip_model
-        gen_model_request.model = gen_model_extended
+        gen_model_extended.expression_model.CopyFrom(gen_model.mipmodel)
+        gen_model_request.model.CopyFrom(gen_model_extended)
 
         model_request_list.append(gen_model_request)
     
     load_model_extended = ExtendedMPModel()
     load_model_request = ReferenceMPModelRequest()
 
-    load_model_extended.concrete_model = load_model.mip_model
-    load_model_request.model = load_model_extended
+    load_model_extended.concrete_model.CopyFrom(load_model.mipmodel)
+    load_model_request.model.CopyFrom(load_model_extended)
 
     model_request_list.append(load_model_request)
 
@@ -96,16 +101,16 @@ def instantiate_model():
     collection_model_extended = ExtendedMPModel()
     collection_model_request = ReferenceMPModelRequest()
 
-    collection_model_extended.reference_model = collection_model.mipmodel
-    collection_model_request.model = collection_model_extended
+    collection_model_extended.reference_model.CopyFrom(collection_model.mipmodel)
+    collection_model_request.model.CopyFrom(collection_model_extended)
 
     model_request_list.append(collection_model_request)
 
     instance_model_extended = ExtendedMPModel()
     instance_model_request = ReferenceMPModelRequest()
 
-    instance_model_extended.reference_model = instance
-    instance_model_request.model = instance_model_extended
+    instance_model_extended.reference_model.CopyFrom(instance)
+    instance_model_request.model.CopyFrom(instance_model_extended)
 
     model_request_list.append(instance_model_request)
 
