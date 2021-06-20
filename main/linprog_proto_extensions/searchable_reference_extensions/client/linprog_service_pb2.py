@@ -12,6 +12,7 @@ _sym_db = _symbol_database.Default()
 
 
 import linear_solver_pb2 as linear__solver__pb2
+import linear_extension_pb2 as linear__extension__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -20,9 +21,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x15linprog_service.proto\x12\x13operations_research\x1a\x13linear_solver.proto2m\n\x0eLinProgService\x12[\n\tMILPModel\x12#.operations_research.MPModelRequest\x1a\'.operations_research.MPSolutionResponse\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\x15linprog_service.proto\x12\x13operations_research\x1a\x13linear_solver.proto\x1a\x16linear_extension.proto2\xcb\x02\n\x0eLinProgService\x12[\n\tMILPModel\x12#.operations_research.MPModelRequest\x1a\'.operations_research.MPSolutionResponse\"\x00\x12o\n\x12MILPReferenceModel\x12,.operations_research.ReferenceMPModelRequest\x1a\'.operations_research.MPSolutionResponse\"\x00(\x01\x12k\n\x12MILPReferenceBuild\x12,.operations_research.ReferenceMPModelRequest\x1a#.operations_research.MPModelRequest\"\x00(\x01\x62\x06proto3'
   ,
-  dependencies=[linear__solver__pb2.DESCRIPTOR,])
+  dependencies=[linear__solver__pb2.DESCRIPTOR,linear__extension__pb2.DESCRIPTOR,])
 
 
 
@@ -37,8 +38,8 @@ _LINPROGSERVICE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=67,
-  serialized_end=176,
+  serialized_start=92,
+  serialized_end=423,
   methods=[
   _descriptor.MethodDescriptor(
     name='MILPModel',
@@ -47,6 +48,26 @@ _LINPROGSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=linear__solver__pb2._MPMODELREQUEST,
     output_type=linear__solver__pb2._MPSOLUTIONRESPONSE,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='MILPReferenceModel',
+    full_name='operations_research.LinProgService.MILPReferenceModel',
+    index=1,
+    containing_service=None,
+    input_type=linear__extension__pb2._REFERENCEMPMODELREQUEST,
+    output_type=linear__solver__pb2._MPSOLUTIONRESPONSE,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='MILPReferenceBuild',
+    full_name='operations_research.LinProgService.MILPReferenceBuild',
+    index=2,
+    containing_service=None,
+    input_type=linear__extension__pb2._REFERENCEMPMODELREQUEST,
+    output_type=linear__solver__pb2._MPMODELREQUEST,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),
