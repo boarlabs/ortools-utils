@@ -18,7 +18,7 @@ def create_stub(channel):
     return stub
 
 
-def reuest_iterator(request):
+def request_iterator(request):
 
     for item in request:
         yield item
@@ -27,7 +27,7 @@ def send_request(channel, request):
     stub = create_stub(channel)
 
 
-    response = stub.MILPReferenceModel(reuest_iterator(request))
+    response = stub.MILPReferenceModel(request_iterator(request))
 
     logging.info("client received response")
     return  response
