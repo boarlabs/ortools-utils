@@ -1,10 +1,12 @@
 
 # from main.linprog_proto_extensions.searchable_reference_extensions.server.linear_solver_pb2 import MPVariableProto
+from dataclasses import dataclass
 from os import name
-from lib.operations_research import(
+from linprog_structs.operations_research import(
     ReferenceMPModel,
     MPVariableProto,
     ReferenceMPModelRequest,
+    ExtendedMPModel,
 )
 
 from linear_extension_pb2 import(
@@ -15,6 +17,11 @@ from linear_extension_pb2 import(
 from linear_solver_pb2 import(
     MPVariableProto as MPVariableProto_pb2,
     MPModelProto as MPModelProto_pb2
+
+)
+
+from linprog_structs.operation_research_ext import(
+    ExtendedMPModelExt,
 )
 
 
@@ -56,7 +63,110 @@ def test2():
 
     data2 = ReferenceMPModelRequest( model = data1)
 
-    ck=2
+    return 
+
+
+
+
+def test_normal_betterproto_creation():
+
+    data1 = ReferenceMPModel()
+
+    data1.name = "test_model"
+    data1.variables.append(
+        MPVariableProto(name="test_var1")
+    )
+
+    data2 = ExtendedMPModel()
+
+    data2.reference_model = data1
+
+    obj_to_dict = data2.to_dict()
+    assert( isinstance(obj_to_dict, dict) )
+
+    # test serialize
+
+    serialized = bytes(data2)
+
+
+    data3  = ExtendedMPModelExt().parse(serialized)
+
+    obj_to_dict2 = data3.to_dict()
+
+
+    return
+
+
+
+
+def test_normal_betterproto_creation_alternative():
+
+    data1 = ReferenceMPModel(
+        name="test_model",
+        variables = [MPVariableProto(name="test_var1")]
+
+    )
+
+
+    data2 = ExtendedMPModel(
+        reference_model=data1
+    )
+
+
+    obj_to_dict = data2.to_dict()
+    assert( isinstance(obj_to_dict, dict) )
+
+    # test serialize
+
+    serialized = bytes(data2)
+
+
+    data3  = ExtendedMPModelExt().parse(serialized)
+
+    obj_to_dict2 = data3.to_dict()
+
+    data4 = ExtendedMPModelExt().from_dict(obj_to_dict2)
+
+    obj_to_dict3 = data4.to_dict()
+
+
+    return
+
+
+
+def test_standard_proto_to_better_proto():
+
+    data1 = ExtendedMPModel_pb2()
+
+    conc_model =MPModelProto_pb2()
+
+    conc_model.name = "test_model3"
+
+    conc_model.variable.append(
+        MPVariableProto_pb2(
+            name = "test_variable_1"
+        )
+    )
+
+    data1.concrete_model.CopyFrom(conc_model)
+
+
+    data2 = ExtendedMPModelExt.from_proto(data1)
+
+    obj_to_dict = data2.to_dict()
+    assert( isinstance(obj_to_dict, dict) )
+
+    # test serialize
+
+    serialized = bytes(data2)
+
+
+    data3  = ExtendedMPModelExt().parse(serialized)
+
+    obj_to_dict2 = data3.to_dict()
+    return
+
+
 
 
 
@@ -67,3 +177,8 @@ if __name__ == "__main__":
 
     test2()
 
+    # test_standard_proto_to_better_proto()
+
+    # test_normal_betterproto_creation()
+    
+    test_normal_betterproto_creation_alternative()

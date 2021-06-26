@@ -82,5 +82,11 @@ So If those classes are my target data structure, the question is how to convert
 4- all of this additional methods would be best to be as Extenions.
 So we can recompile freely.
 
+## experiment with BetterProto conversion extension classes
 
+So the idea was to create a set of extension classes that would convert a classic proto message to the new better proto message.
+
+I could go like:
+classic_proto --> dict --> betterproto
+(wait does it really work? ->test-> yep works very fine)
 

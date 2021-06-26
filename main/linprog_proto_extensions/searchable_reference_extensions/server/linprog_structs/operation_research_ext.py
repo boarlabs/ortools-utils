@@ -3,7 +3,7 @@ from typing import List, Any, TypeVar, Callable, Type, cast, Optional
 from enum import Enum
 from dataclasses import dataclass
 
-from operations_research import(
+from .operations_research import(
     ReferenceMPModelRequest,
     ExtendedMPModel,
     MPModelProto,
@@ -16,6 +16,13 @@ from operations_research import(
     MPQuadraticObjective,
     MPGeneralConstraintProto,
     MPConstraintProto,
+    MPVariableProto,
+    MPIndicatorConstraint,
+    MPSosConstraint,
+    MPQuadraticConstraint,
+    MPAbsConstraint,
+    MPArrayConstraint,
+    MPArrayWithConstantConstraint
 ) 
 
 
@@ -23,7 +30,7 @@ T = TypeVar("T")
 EnumT = TypeVar("EnumT", bound=Enum)
 
 def from_list(f: Callable[[Any], T], x: Any) -> List[T]:
-    assert isinstance(x, list)
+    # assert isinstance(x, list)
     return [f(y) for y in x]
 
 
@@ -35,21 +42,41 @@ class MPArrayWithConstantConstraintExt(MPArrayWithConstantConstraint):
 
     @staticmethod
     def from_proto(obj:Any):
-        pass
+        var_index = obj.var_index
+        constant = obj.constant
+        resultant_var_index = obj.resultant_var_index
+
+        return MPArrayWithConstantConstraintExt(
+            var_index,
+            constant,
+            resultant_var_index,
+        )
 
 @dataclass
 class MPArrayConstraintExt(MPArrayConstraint):
 
     @staticmethod
     def from_proto(obj:Any):
-        pass
+        var_index = obj.var_index
+        resultant_var_index = obj.resultant_var_index
+
+        return MPArrayConstraintExt(
+            var_index,
+            resultant_var_index,
+        )
 
 @dataclass
 class MPAbsConstraintExt(MPAbsConstraint):
 
     @staticmethod
     def from_proto(obj:Any):
-        pass
+        var_index = obj.var_index 
+        resultant_var_index = obj.resultant_var_index
+
+        return MPAbsConstraintExt(
+            var_index,
+            resultant_var_index,
+        )
 
 
 @dataclass
@@ -57,32 +84,44 @@ class MPQuadraticConstraintExt(MPQuadraticConstraint):
 
     @staticmethod
     def from_proto(obj:Any):
-        pass
+        var_index = obj.var_index
+        #  List[int] = betterproto.int32_field(1)
+        coefficient = obj.coefficient
+        qvar1_index = obj.qvar1_index
+        qvar2_index = obj.qvar2_index
+        qcoefficient = obj.qcoefficient
+        lower_bound = obj.lower_bound
+        upper_bound = obj.upper_bound
+
+        return MPQuadraticConstraintExt(
+            var_index,
+            coefficient,
+            qvar1_index,
+            qvar2_index,
+            qcoefficient,
+            lower_bound,
+            upper_bound,
+        )
+
 
 @dataclass
 class MPSosConstraintExt(MPSosConstraint):
 
     @staticmethod
     def from_proto(obj:Any):
-        pass
+        
+        type = obj.type
+        # : "MPSosConstraintType" = betterproto.enum_field(1)
+        var_index = obj.var_index
+        #  List[int] = betterproto.int32_field(2)
+        weight = obj.weight
 
-
-@dataclass
-class MPIndicatorConstraintExt(MPIndicatorConstraint):
-
-    @staticmethod
-    def from_proto(obj:Any):
-        pass
-
-
-@dataclass
-class MPVariableProtoExt(MPVariableProto):
-
-    @staticmethod
-    def from_proto(obj:Any):
-        pass
-
-
+        return MPSosConstraintExt(
+            type,
+            var_index,
+            weight,
+        )
+        
 
 @dataclass
 class MPConstraintProtoExt(MPConstraintProto):
@@ -105,6 +144,40 @@ class MPConstraintProtoExt(MPConstraintProto):
             is_lazy,
         )
 
+
+@dataclass
+class MPIndicatorConstraintExt(MPIndicatorConstraint):
+
+    @staticmethod
+    def from_proto(obj:Any):
+        var_index = obj.var_index
+        var_value = obj.var_value
+        constraint =  MPConstraintProtoExt.from_proto(obj.constraint)
+
+
+@dataclass
+class MPVariableProtoExt(MPVariableProto):
+
+    @staticmethod
+    def from_proto(obj:Any):
+        
+        lower_bound = obj.lower_bound
+        upper_bound = obj.upper_bound
+        objective_coefficient = obj.objective_coefficient
+        is_integer = obj.is_integer
+        name = obj.name
+
+        print(type(obj.name))
+        branching_priority = obj.branching_priority
+
+        return MPVariableProtoExt(
+            lower_bound,
+            upper_bound,
+            objective_coefficient,
+            is_integer,
+            name,
+            branching_priority,
+        )
 
 @dataclass
 class MPGeneralConstraintProtoExt(MPGeneralConstraintProto):
@@ -305,7 +378,7 @@ class ExpressionMPModelExt(ExpressionMPModel):
     def from_proto(obj:Any):
         variable = from_list(MPVariableProtoExt.from_proto, obj.variable)
         constraint = from_list(MPConstraintProtoExt.from_proto, obj.constraint)
-        general_constraint = from_list(MPGeneralConstraintProtoExt.from_prto, obj.general_constraint)
+        general_constraint = from_list(MPGeneralConstraintProtoExt.from_proto, obj.general_constraint)
         maximize = obj.maximize
         objective_offset = obj.objective_offset 
         quadratic_objective = MPQuadraticObjectiveExt.from_proto(obj.quadratic_objective)
