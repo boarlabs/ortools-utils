@@ -1,11 +1,11 @@
 proto_server:
 	python3 -m grpc_tools.protoc \
-	    -I . --python_out=../server --grpc_python_out=../server \
+	    -I . --python_out=../server/operations_research --grpc_python_out=../server/operations_research \
 	    ./*.proto
 
 proto_client:
 	python3 -m grpc_tools.protoc \
-	    -I . --python_out=../client --grpc_python_out=../client \
+	    -I . --python_out=../client/operations_research --grpc_python_out=../client/operations_research \
 	    ./*.proto
 
 
