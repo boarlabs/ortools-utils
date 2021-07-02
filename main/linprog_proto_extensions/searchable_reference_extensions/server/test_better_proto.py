@@ -25,6 +25,10 @@ from linprog_structs.operation_research_ext import(
 )
 
 
+from google.protobuf.json_format import ParseDict, MessageToDict
+
+
+
 def test1():
 
     data1 = ReferenceMPModel()
@@ -168,17 +172,39 @@ def test_standard_proto_to_better_proto():
 
 
 
+def test_proto_to_dict_to_proto():
+
+    data1 = ExtendedMPModel_pb2()
+    conc_model =MPModelProto_pb2()
+    conc_model.name = "test_model3"
+    conc_model.variable.append(
+        MPVariableProto_pb2(
+            name = "test_variable_1"
+        )
+    )
+    data1.concrete_model.CopyFrom(conc_model)
+
+    obj_to_dict1 = MessageToDict(data1)
+    
+    data2 = ExtendedMPModelExt().from_dict(obj_to_dict1)
+    obj_to_dict2 = data2.to_dict()
+
+
+    return
+
+
 
 
 
 if __name__ == "__main__":
     # test1()
-
-
-    test2()
+    # test2()
 
     # test_standard_proto_to_better_proto()
 
     # test_normal_betterproto_creation()
     
-    test_normal_betterproto_creation_alternative()
+    # test_normal_betterproto_creation_alternative()
+
+
+    test_proto_to_dict_to_proto()
