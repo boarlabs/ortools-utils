@@ -16,7 +16,7 @@ from basic_model_defenition_from_proto import(
 
 def instantiate_model():
 
-    data_directory_path = "./sample_data"
+    data_directory_path = "./client/sample_data"
     data_file_name = "asset_data.xlsx"
 
     # Generator names in excel file are non-unique
