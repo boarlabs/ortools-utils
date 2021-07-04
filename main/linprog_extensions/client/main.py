@@ -2,7 +2,7 @@ import logging
 import sys
 import grpc
 
-from linprog_service_pb2_grpc import(
+from operations_research import(
     LinProgServiceStub
 )
 

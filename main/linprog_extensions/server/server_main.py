@@ -2,9 +2,13 @@ from concurrent.futures import ThreadPoolExecutor
 import logging
 
 import grpc
-from linprog_service_pb2_grpc import(
+
+from context import operations_research
+
+from operations_research.python.linprog_service_pb2_grpc import(
     add_LinProgServiceServicer_to_server
 )
+
 from linprog_server import LinProgServer
 
 
