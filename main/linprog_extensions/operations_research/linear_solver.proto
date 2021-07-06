@@ -32,7 +32,7 @@ syntax = "proto2";
 option go_package="operations_research;operations_research";
 
 // import "google/protobuf/wrappers.proto";
-import "optional_boolean.proto";
+import "operations_research/optional_boolean.proto";
 
 
 package operations_research;

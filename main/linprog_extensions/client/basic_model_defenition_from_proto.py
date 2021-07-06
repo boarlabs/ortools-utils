@@ -1,10 +1,10 @@
-from linear_solver_pb2 import(
+from operations_research.linear_solver_pb2 import(
     MPModelProto,
     MPVariableProto,
     MPConstraintProto
 )
 
-from linear_extension_pb2 import(
+from operations_research.linear_extension_pb2 import(
     ExpressionMPModel,
     ReferenceMPVariable,
     MPExpression,

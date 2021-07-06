@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 # from flat_block_classes_pyoenviron import Model, Collection, Generator, Load, Solver
-from linear_extension_pb2 import(
+from operations_research.linear_extension_pb2 import(
     ReferenceMPModel,
     ExtendedMPModel,
     ReferenceMPModelRequest,

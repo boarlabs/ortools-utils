@@ -1,7 +1,7 @@
 
 
-from operations_research.python.linprog_service_pb2_grpc import LinProgServiceServicer
-import operations_research.python.linear_solver_pb2 as linear_solver_pb2
+from operations_research.linprog_service_pb2_grpc import LinProgServiceServicer
+import operations_research.linear_solver_pb2 as linear_solver_pb2
 
 from ortools.linear_solver import pywraplp
 

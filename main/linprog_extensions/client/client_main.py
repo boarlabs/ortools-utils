@@ -7,7 +7,7 @@ from context import operations_research
 # from operations_research.python.linprog_service_pb2_grpc import(
 #     LinProgServiceStub
 # )
-from linprog_service_pb2_grpc import(
+from operations_research.linprog_service_pb2_grpc import(
     LinProgServiceStub
 )
 

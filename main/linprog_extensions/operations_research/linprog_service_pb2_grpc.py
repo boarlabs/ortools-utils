@@ -2,8 +2,8 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import linear_extension_pb2 as linear__extension__pb2
-import linear_solver_pb2 as linear__solver__pb2
+from operations_research import linear_extension_pb2 as operations__research_dot_linear__extension__pb2
+from operations_research import linear_solver_pb2 as operations__research_dot_linear__solver__pb2
 
 
 class LinProgServiceStub(object):
@@ -17,18 +17,18 @@ class LinProgServiceStub(object):
         """
         self.MILPModel = channel.unary_unary(
                 '/operations_research.LinProgService/MILPModel',
-                request_serializer=linear__solver__pb2.MPModelRequest.SerializeToString,
-                response_deserializer=linear__solver__pb2.MPSolutionResponse.FromString,
+                request_serializer=operations__research_dot_linear__solver__pb2.MPModelRequest.SerializeToString,
+                response_deserializer=operations__research_dot_linear__solver__pb2.MPSolutionResponse.FromString,
                 )
         self.MILPReferenceModel = channel.stream_unary(
                 '/operations_research.LinProgService/MILPReferenceModel',
-                request_serializer=linear__extension__pb2.ReferenceMPModelRequest.SerializeToString,
-                response_deserializer=linear__solver__pb2.MPSolutionResponse.FromString,
+                request_serializer=operations__research_dot_linear__extension__pb2.ReferenceMPModelRequest.SerializeToString,
+                response_deserializer=operations__research_dot_linear__solver__pb2.MPSolutionResponse.FromString,
                 )
         self.MILPReferenceBuild = channel.stream_unary(
                 '/operations_research.LinProgService/MILPReferenceBuild',
-                request_serializer=linear__extension__pb2.ReferenceMPModelRequest.SerializeToString,
-                response_deserializer=linear__solver__pb2.MPModelRequest.FromString,
+                request_serializer=operations__research_dot_linear__extension__pb2.ReferenceMPModelRequest.SerializeToString,
+                response_deserializer=operations__research_dot_linear__solver__pb2.MPModelRequest.FromString,
                 )
 
 
@@ -58,18 +58,18 @@ def add_LinProgServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'MILPModel': grpc.unary_unary_rpc_method_handler(
                     servicer.MILPModel,
-                    request_deserializer=linear__solver__pb2.MPModelRequest.FromString,
-                    response_serializer=linear__solver__pb2.MPSolutionResponse.SerializeToString,
+                    request_deserializer=operations__research_dot_linear__solver__pb2.MPModelRequest.FromString,
+                    response_serializer=operations__research_dot_linear__solver__pb2.MPSolutionResponse.SerializeToString,
             ),
             'MILPReferenceModel': grpc.stream_unary_rpc_method_handler(
                     servicer.MILPReferenceModel,
-                    request_deserializer=linear__extension__pb2.ReferenceMPModelRequest.FromString,
-                    response_serializer=linear__solver__pb2.MPSolutionResponse.SerializeToString,
+                    request_deserializer=operations__research_dot_linear__extension__pb2.ReferenceMPModelRequest.FromString,
+                    response_serializer=operations__research_dot_linear__solver__pb2.MPSolutionResponse.SerializeToString,
             ),
             'MILPReferenceBuild': grpc.stream_unary_rpc_method_handler(
                     servicer.MILPReferenceBuild,
-                    request_deserializer=linear__extension__pb2.ReferenceMPModelRequest.FromString,
-                    response_serializer=linear__solver__pb2.MPModelRequest.SerializeToString,
+                    request_deserializer=operations__research_dot_linear__extension__pb2.ReferenceMPModelRequest.FromString,
+                    response_serializer=operations__research_dot_linear__solver__pb2.MPModelRequest.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -93,8 +93,8 @@ class LinProgService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/operations_research.LinProgService/MILPModel',
-            linear__solver__pb2.MPModelRequest.SerializeToString,
-            linear__solver__pb2.MPSolutionResponse.FromString,
+            operations__research_dot_linear__solver__pb2.MPModelRequest.SerializeToString,
+            operations__research_dot_linear__solver__pb2.MPSolutionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -110,8 +110,8 @@ class LinProgService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.stream_unary(request_iterator, target, '/operations_research.LinProgService/MILPReferenceModel',
-            linear__extension__pb2.ReferenceMPModelRequest.SerializeToString,
-            linear__solver__pb2.MPSolutionResponse.FromString,
+            operations__research_dot_linear__extension__pb2.ReferenceMPModelRequest.SerializeToString,
+            operations__research_dot_linear__solver__pb2.MPSolutionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -127,7 +127,7 @@ class LinProgService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.stream_unary(request_iterator, target, '/operations_research.LinProgService/MILPReferenceBuild',
-            linear__extension__pb2.ReferenceMPModelRequest.SerializeToString,
-            linear__solver__pb2.MPModelRequest.FromString,
+            operations__research_dot_linear__extension__pb2.ReferenceMPModelRequest.SerializeToString,
+            operations__research_dot_linear__solver__pb2.MPModelRequest.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

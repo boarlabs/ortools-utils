@@ -6,7 +6,7 @@ package operations_research;
 
 // import "google/protobuf/wrappers.proto";
 
-import "linear_solver.proto";
+import "operations_research/linear_solver.proto";
 
 
 message ReferenceMPVariable {
