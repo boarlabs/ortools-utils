@@ -10,6 +10,6 @@ proto_server:
 
 
 better_proto_server:
-	mkdir -p ../server/lib 
-	python -m grpc_tools.protoc -I . --python_betterproto_out=../server/lib ./linear_solver.proto ./linear_extension.proto
+	mkdir -p ./server/linprog_structs
+	python -m grpc_tools.protoc -I . --python_betterproto_out=./server/linprog_structs ./operations_research/linear_solver.proto ./operations_research/linear_extension.proto
 

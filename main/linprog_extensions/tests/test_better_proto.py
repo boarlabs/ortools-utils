@@ -1,26 +1,28 @@
 
-# from main.linprog_proto_extensions.searchable_reference_extensions.server.linear_solver_pb2 import MPVariableProto
 from dataclasses import dataclass
 from os import name
-from linprog_structs.operations_research import(
+
+from context import operations_research
+
+from server.linprog_structs.operations_research import(
     ReferenceMPModel,
     MPVariableProto,
     ReferenceMPModelRequest,
     ExtendedMPModel,
 )
 
-from linear_extension_pb2 import(
+from operations_research.linear_extension_pb2 import(
     ReferenceMPModel as ReferenceMPModel_pb2,
     ExtendedMPModel as ExtendedMPModel_pb2
 )
 
-from linear_solver_pb2 import(
+from operations_research.linear_solver_pb2 import(
     MPVariableProto as MPVariableProto_pb2,
     MPModelProto as MPModelProto_pb2
 
 )
 
-from linprog_structs.operation_research_ext import(
+from server.linprog_structs.operation_research_ext import(
     ExtendedMPModelExt,
 )
 
@@ -188,7 +190,6 @@ def test_proto_to_dict_to_proto():
     
     data2 = ExtendedMPModelExt().from_dict(obj_to_dict1)
     obj_to_dict2 = data2.to_dict()
-
 
     return
 
