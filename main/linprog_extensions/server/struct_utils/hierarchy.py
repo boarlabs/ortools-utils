@@ -4,9 +4,8 @@ from typing import List
 from dataclasses import dataclass
 
 import uuid
-from optopy.io_processing.struct_utils import Catalogue
+from .catalogue import Catalogue
 
-# from optopy_data_hirarchy.quicktype_mini_funcs import from_list
 import networkx as nx
 
 

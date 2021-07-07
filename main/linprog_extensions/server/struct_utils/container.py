@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import List
 import copy
 
-from optopy.io_processing.struct_utils import Component
+from .component import Component
 from dataclasses import dataclass, field
 
 
@@ -14,20 +14,25 @@ class Container(Component):
         super().__post_init__()
         self._children_ = []
 
+
     @property
     def _children(self) -> List[Component]:
         return self._children_
+
 
     def add(self, component: Component) -> None:
         self._children_.append(component)
         component._parent_component = self
 
+
     def remove(self, component: Component) -> None:
         self._children_.remove(component)
         component._parent_component = None
 
+
     def is_composite(self) -> bool:
         return True
+
 
     # def get_children(self) ->List[Component]:
     #     return self._children
@@ -52,7 +57,6 @@ class Container(Component):
 
 
     def operation(self) -> str:
-
         results = []
         for child in self._children_:
             results.append(child.operation())
