@@ -9,8 +9,8 @@ from dataclasses import dataclass, field
 
 @dataclass
 class Container(Component):
-    def __post_init__(self):
 
+    def __post_init__(self):
         super().__post_init__()
         self._children_ = []
 

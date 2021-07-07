@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import List, Any, TypeVar, Callable, Type, cast, Optional
 from enum import Enum
 from dataclasses import dataclass
+from ..struct_utils import Container, Content, HierarchyMixin
 
 from .operations_research import(
     ReferenceMPModelRequest,
