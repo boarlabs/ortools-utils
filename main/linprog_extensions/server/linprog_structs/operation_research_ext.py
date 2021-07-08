@@ -39,7 +39,12 @@ def from_list(f: Callable[[Any], T], x: Any) -> List[T]:
 
 
 @dataclass
-class MPArrayWithConstantConstraintExt(MPArrayWithConstantConstraint):
+class MPArrayWithConstantConstraintExt(MPArrayWithConstantConstraint, Container):
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+
 
     @staticmethod
     def from_proto(obj:Any):
@@ -54,7 +59,13 @@ class MPArrayWithConstantConstraintExt(MPArrayWithConstantConstraint):
         )
 
 @dataclass
-class MPArrayConstraintExt(MPArrayConstraint):
+class MPArrayConstraintExt(MPArrayConstraint, Container):
+
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+
 
     @staticmethod
     def from_proto(obj:Any):
@@ -67,7 +78,12 @@ class MPArrayConstraintExt(MPArrayConstraint):
         )
 
 @dataclass
-class MPAbsConstraintExt(MPAbsConstraint):
+class MPAbsConstraintExt(MPAbsConstraint, Container):
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+
 
     @staticmethod
     def from_proto(obj:Any):
@@ -81,7 +97,12 @@ class MPAbsConstraintExt(MPAbsConstraint):
 
 
 @dataclass
-class MPQuadraticConstraintExt(MPQuadraticConstraint):
+class MPQuadraticConstraintExt(MPQuadraticConstraint, Container):
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+
 
     @staticmethod
     def from_proto(obj:Any):
@@ -106,7 +127,12 @@ class MPQuadraticConstraintExt(MPQuadraticConstraint):
 
 
 @dataclass
-class MPSosConstraintExt(MPSosConstraint):
+class MPSosConstraintExt(MPSosConstraint, Container):
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+
 
     @staticmethod
     def from_proto(obj:Any):
@@ -125,7 +151,12 @@ class MPSosConstraintExt(MPSosConstraint):
         
 
 @dataclass
-class MPConstraintProtoExt(MPConstraintProto):
+class MPConstraintProtoExt(MPConstraintProto, Container):
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+
 
     @staticmethod
     def from_proto(obj:Any):
@@ -147,7 +178,13 @@ class MPConstraintProtoExt(MPConstraintProto):
 
 
 @dataclass
-class MPIndicatorConstraintExt(MPIndicatorConstraint):
+class MPIndicatorConstraintExt(MPIndicatorConstraint, Container):
+
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+
 
     @staticmethod
     def from_proto(obj:Any):
@@ -157,7 +194,12 @@ class MPIndicatorConstraintExt(MPIndicatorConstraint):
 
 
 @dataclass
-class MPVariableProtoExt(MPVariableProto):
+class MPVariableProtoExt(MPVariableProto, Container):
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+
 
     @staticmethod
     def from_proto(obj:Any):
@@ -181,7 +223,12 @@ class MPVariableProtoExt(MPVariableProto):
         )
 
 @dataclass
-class MPGeneralConstraintProtoExt(MPGeneralConstraintProto):
+class MPGeneralConstraintProtoExt(MPGeneralConstraintProto, Container):
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+
 
     @staticmethod
     def from_proto(obj:Any):
@@ -209,7 +256,12 @@ class MPGeneralConstraintProtoExt(MPGeneralConstraintProto):
        
 
 @dataclass
-class MPQuadraticObjectiveExt(MPQuadraticObjective):
+class MPQuadraticObjectiveExt(MPQuadraticObjective, Container):
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+
 
     @staticmethod
     def from_proto(obj:Any):
@@ -225,7 +277,12 @@ class MPQuadraticObjectiveExt(MPQuadraticObjective):
 
 
 @dataclass
-class PartialVariableAssignmentExt(PartialVariableAssignment):
+class PartialVariableAssignmentExt(PartialVariableAssignment, Container):
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+
 
     @staticmethod
     def from_proto(obj:Any):
@@ -239,7 +296,12 @@ class PartialVariableAssignmentExt(PartialVariableAssignment):
 
 
 @dataclass
-class ReferenceMPVariableExt(ReferenceMPVariable):
+class ReferenceMPVariableExt(ReferenceMPVariable, Container):
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+
 
     @staticmethod
     def from_proto(obj:Any):
@@ -260,7 +322,12 @@ class ReferenceMPVariableExt(ReferenceMPVariable):
 
 
 @dataclass
-class MPExpressionExt(MPExpression):
+class MPExpressionExt(MPExpression, Container):
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+
 
     @staticmethod
     def from_proto(obj:Any):
@@ -285,7 +352,12 @@ class MPExpressionExt(MPExpression):
         )
 
 @dataclass
-class ReferenceMPConstraintExt(ReferenceMPConstraint):
+class ReferenceMPConstraintExt(ReferenceMPConstraint, Container):
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+
 
     @staticmethod
     def from_proto(obj:Any):
@@ -319,7 +391,12 @@ class ReferenceMPConstraintExt(ReferenceMPConstraint):
 
 
 @dataclass
-class MPModelProtoExt(MPModelProto):
+class MPModelProtoExt(MPModelProto, Container):
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+
 
     @staticmethod
     def from_proto(obj:Any):
@@ -344,7 +421,12 @@ class MPModelProtoExt(MPModelProto):
         )
 
 @dataclass
-class ReferenceMPModelExt(ReferenceMPModel):
+class ReferenceMPModelExt(ReferenceMPModel, Container):
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+
 
     @staticmethod
     def from_proto(obj:Any):
@@ -373,7 +455,12 @@ class ReferenceMPModelExt(ReferenceMPModel):
         )
 
 @dataclass
-class ExpressionMPModelExt(ExpressionMPModel):
+class ExpressionMPModelExt(ExpressionMPModel, Container):
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+
 
     @staticmethod
     def from_proto(obj:Any):
@@ -403,7 +490,11 @@ class ExpressionMPModelExt(ExpressionMPModel):
 
 
 @dataclass
-class ExtendedMPModelExt(ExtendedMPModel):
+class ExtendedMPModelExt(ExtendedMPModel, Container):
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
 
     @staticmethod
     def from_proto(obj:Any):
@@ -419,7 +510,11 @@ class ExtendedMPModelExt(ExtendedMPModel):
 
 
 @dataclass
-class ReferenceMPModelRequestExt(ReferenceMPModelRequest):
+class ReferenceMPModelRequestExt(ReferenceMPModelRequest, Container):
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
 
     @staticmethod
     def from_proto(obj:Any):
@@ -431,3 +526,20 @@ class ReferenceMPModelRequestExt(ReferenceMPModelRequest):
 
 
 
+@dataclass
+class ReferenceMPModelRequestStreem(HierarchyMixin, Container):
+
+    model_requests: List[ReferenceMPModel]
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.set_children()
+        self.populate_hierarchy()
+
+    @staticmethod
+    def from_proto(obj:Any):
+        model_requests = from_list( ReferenceMPModelRequestExt.from_proto, obj)
+
+        return ReferenceMPModelRequestStreem(
+            model_requests
+        )
