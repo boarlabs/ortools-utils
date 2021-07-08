@@ -39,7 +39,7 @@ def from_list(f: Callable[[Any], T], x: Any) -> List[T]:
 
 
 @dataclass
-class MPArrayWithConstantConstraintExt(MPArrayWithConstantConstraint, Container):
+class MPArrayWithConstantConstraintExt(Content, MPArrayWithConstantConstraint):
 
     def __post_init__(self):
         super().__post_init__()
@@ -59,7 +59,7 @@ class MPArrayWithConstantConstraintExt(MPArrayWithConstantConstraint, Container)
         )
 
 @dataclass
-class MPArrayConstraintExt(MPArrayConstraint, Container):
+class MPArrayConstraintExt(Content, MPArrayConstraint):
 
 
     def __post_init__(self):
@@ -78,7 +78,7 @@ class MPArrayConstraintExt(MPArrayConstraint, Container):
         )
 
 @dataclass
-class MPAbsConstraintExt(MPAbsConstraint, Container):
+class MPAbsConstraintExt(Content, MPAbsConstraint):
 
     def __post_init__(self):
         super().__post_init__()
@@ -97,7 +97,7 @@ class MPAbsConstraintExt(MPAbsConstraint, Container):
 
 
 @dataclass
-class MPQuadraticConstraintExt(MPQuadraticConstraint, Container):
+class MPQuadraticConstraintExt(Content, MPQuadraticConstraint):
 
     def __post_init__(self):
         super().__post_init__()
@@ -127,7 +127,7 @@ class MPQuadraticConstraintExt(MPQuadraticConstraint, Container):
 
 
 @dataclass
-class MPSosConstraintExt(MPSosConstraint, Container):
+class MPSosConstraintExt(Content, MPSosConstraint):
 
     def __post_init__(self):
         super().__post_init__()
@@ -151,7 +151,7 @@ class MPSosConstraintExt(MPSosConstraint, Container):
         
 
 @dataclass
-class MPConstraintProtoExt(MPConstraintProto, Container):
+class MPConstraintProtoExt(Content, MPConstraintProto):
 
     def __post_init__(self):
         super().__post_init__()
@@ -178,7 +178,7 @@ class MPConstraintProtoExt(MPConstraintProto, Container):
 
 
 @dataclass
-class MPIndicatorConstraintExt(MPIndicatorConstraint, Container):
+class MPIndicatorConstraintExt(Content, MPIndicatorConstraint):
 
 
     def __post_init__(self):
@@ -194,7 +194,7 @@ class MPIndicatorConstraintExt(MPIndicatorConstraint, Container):
 
 
 @dataclass
-class MPVariableProtoExt(MPVariableProto, Container):
+class MPVariableProtoExt(Container, MPVariableProto):
 
     def __post_init__(self):
         super().__post_init__()
@@ -223,7 +223,7 @@ class MPVariableProtoExt(MPVariableProto, Container):
         )
 
 @dataclass
-class MPGeneralConstraintProtoExt(MPGeneralConstraintProto, Container):
+class MPGeneralConstraintProtoExt(Container, MPGeneralConstraintProto):
 
     def __post_init__(self):
         super().__post_init__()
@@ -256,7 +256,7 @@ class MPGeneralConstraintProtoExt(MPGeneralConstraintProto, Container):
        
 
 @dataclass
-class MPQuadraticObjectiveExt(MPQuadraticObjective, Container):
+class MPQuadraticObjectiveExt(Content, MPQuadraticObjective):
 
     def __post_init__(self):
         super().__post_init__()
@@ -277,7 +277,7 @@ class MPQuadraticObjectiveExt(MPQuadraticObjective, Container):
 
 
 @dataclass
-class PartialVariableAssignmentExt(PartialVariableAssignment, Container):
+class PartialVariableAssignmentExt(Content, PartialVariableAssignment):
 
     def __post_init__(self):
         super().__post_init__()
@@ -296,7 +296,7 @@ class PartialVariableAssignmentExt(PartialVariableAssignment, Container):
 
 
 @dataclass
-class ReferenceMPVariableExt(ReferenceMPVariable, Container):
+class ReferenceMPVariableExt(Content, ReferenceMPVariable):
 
     def __post_init__(self):
         super().__post_init__()
@@ -322,7 +322,7 @@ class ReferenceMPVariableExt(ReferenceMPVariable, Container):
 
 
 @dataclass
-class MPExpressionExt(MPExpression, Container):
+class MPExpressionExt(Container, MPExpression):
 
     def __post_init__(self):
         super().__post_init__()
@@ -352,7 +352,7 @@ class MPExpressionExt(MPExpression, Container):
         )
 
 @dataclass
-class ReferenceMPConstraintExt(ReferenceMPConstraint, Container):
+class ReferenceMPConstraintExt(Container, ReferenceMPConstraint):
 
     def __post_init__(self):
         super().__post_init__()
@@ -391,11 +391,22 @@ class ReferenceMPConstraintExt(ReferenceMPConstraint, Container):
 
 
 @dataclass
-class MPModelProtoExt(MPModelProto, Container):
+class MPModelProtoExt(Container, MPModelProto):
+
+    # variable: List[MPVariableProtoExt]
+    # constraint: List[MPConstraintProtoExt]
+    # general_constraint: List[MPGeneralConstraintProtoExt]
+    # maximize: bool
+    # objective_offset: int
+    # quadratic_objective: MPQuadraticObjectiveExt
+    # name: str
+    # solution_hint: PartialVariableAssignmentExt
 
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+
+        return
 
 
     @staticmethod
@@ -421,7 +432,7 @@ class MPModelProtoExt(MPModelProto, Container):
         )
 
 @dataclass
-class ReferenceMPModelExt(ReferenceMPModel, Container):
+class ReferenceMPModelExt(Container, ReferenceMPModel):
 
     def __post_init__(self):
         super().__post_init__()
@@ -455,7 +466,7 @@ class ReferenceMPModelExt(ReferenceMPModel, Container):
         )
 
 @dataclass
-class ExpressionMPModelExt(ExpressionMPModel, Container):
+class ExpressionMPModelExt(Container, ExpressionMPModel):
 
     def __post_init__(self):
         super().__post_init__()
@@ -490,7 +501,7 @@ class ExpressionMPModelExt(ExpressionMPModel, Container):
 
 
 @dataclass
-class ExtendedMPModelExt(ExtendedMPModel, Container):
+class ExtendedMPModelExt(Container, ExtendedMPModel):
 
     def __post_init__(self):
         super().__post_init__()
@@ -510,7 +521,7 @@ class ExtendedMPModelExt(ExtendedMPModel, Container):
 
 
 @dataclass
-class ReferenceMPModelRequestExt(ReferenceMPModelRequest, Container):
+class ReferenceMPModelRequestExt(Container, ReferenceMPModelRequest):
 
     def __post_init__(self):
         super().__post_init__()

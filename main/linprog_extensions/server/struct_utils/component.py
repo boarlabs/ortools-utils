@@ -13,7 +13,8 @@ from .catalogue import Catalogue
 @dataclass
 class Component(ABC):
 
-    def __post_init__(self):      
+    def __post_init__(self):
+        # super().__init__()
         self._parent_component_ = None
         self._uid = uuid.uuid4()
 

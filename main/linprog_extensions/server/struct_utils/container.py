@@ -14,6 +14,8 @@ class Container(Component):
         super().__post_init__()
         self._children_ = []
 
+        return
+
 
     @property
     def _children(self) -> List[Component]:
