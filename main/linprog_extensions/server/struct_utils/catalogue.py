@@ -2,7 +2,6 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import List
 
-# from optopy.output_processing.hirarchy_utils import Component
 
 from dataclasses import dataclass
 
@@ -36,9 +35,9 @@ class Catalogue:
         if not hasattr(self, "initted"):
             self.id = component._uid
             self.component_name = component.name if hasattr(component, "name") else ""
-            self.component_class_name = (
-                component.class_name if hasattr(component, "class_name") else ""
-            )
+            # self.component_class_name = (
+            #     component.class_name if hasattr(component, "class_name") else ""
+            # )
             self.component = component
             self.initted = True
 

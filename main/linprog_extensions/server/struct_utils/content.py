@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import List
-from optopy.io_processing.struct_utils import Component
+from .component import Component
 
 from dataclasses import dataclass
 
@@ -20,4 +20,4 @@ class Content(Component):
         pass
 
     def operation(self) -> str:
-        return "Operation Mp2"
+        return "Operation Mp3"
