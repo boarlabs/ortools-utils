@@ -194,7 +194,7 @@ class MPIndicatorConstraintExt(Content, MPIndicatorConstraint):
 
 
 @dataclass
-class MPVariableProtoExt(Container, MPVariableProto):
+class MPVariableProtoExt(Content, MPVariableProto):
 
     def __post_init__(self):
         super().__post_init__()
@@ -502,6 +502,9 @@ class ExpressionMPModelExt(Container, ExpressionMPModel):
 
 @dataclass
 class ExtendedMPModelExt(Container, ExtendedMPModel):
+    # concrete_model: MPModelProtoExt
+    # reference_model: ReferenceMPModelExt
+    # expression_model: ExpressionMPModelExt
 
     def __post_init__(self):
         super().__post_init__()
@@ -513,10 +516,11 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
         reference_model = ReferenceMPModelExt.from_proto(obj.reference_model)
         expression_model = ExpressionMPModelExt.from_proto(obj.expression_model)
 
+
         return ExtendedMPModelExt(
             concrete_model,
             reference_model,
-            expression_model
+            expression_model,
         )
 
 

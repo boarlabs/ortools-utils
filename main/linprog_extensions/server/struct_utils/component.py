@@ -14,7 +14,7 @@ from .catalogue import Catalogue
 class Component(ABC):
 
     def __post_init__(self):
-        # super().__init__()
+        super().__post_init__()
         self._parent_component_ = None
         self._uid = uuid.uuid4()
 
@@ -56,44 +56,44 @@ class Component(ABC):
         pass
 
 
-    def to_dict(self) -> dict:
-        result: dict = {}
+    # def to_dict(self) -> dict:
+    #     result: dict = {}
 
-        attributes = self.get_public_attributes()
+    #     attributes = self.get_public_attributes()
 
-        for key, atrib in attributes.items():
+    #     for key, atrib in attributes.items():
 
-            if hasattr(atrib, "to_dict"):
-                result[key] = atrib.to_dict()
-            elif isinstance(atrib, list):
+    #         if hasattr(atrib, "to_dict"):
+    #             result[key] = atrib.to_dict()
+    #         elif isinstance(atrib, list):
 
-                item_result = list()
-                for item in atrib:
-                    if  hasattr(item, "to_dict"):
-                        item_result.append(item.to_dict())
-                    elif isinstance(item, datetime):
-                        if item.tzinfo is not None:
-                            ts = item.replace(tzinfo=None)
-                        else:
-                            ts = item
-                        item_result.append(ts.isoformat("T") + "Z")
-                    else:
-                        item_result.append(item)
+    #             item_result = list()
+    #             for item in atrib:
+    #                 if  hasattr(item, "to_dict"):
+    #                     item_result.append(item.to_dict())
+    #                 elif isinstance(item, datetime):
+    #                     if item.tzinfo is not None:
+    #                         ts = item.replace(tzinfo=None)
+    #                     else:
+    #                         ts = item
+    #                     item_result.append(ts.isoformat("T") + "Z")
+    #                 else:
+    #                     item_result.append(item)
 
-                result[key] = item_result
+    #             result[key] = item_result
             
-            elif isinstance(atrib, datetime):
-                if atrib.tzinfo is not None:
-                    ts = atrib.replace(tzinfo=None)
-                else:
-                    ts = atrib
-                result[key] =  ts.isoformat("T") + "Z"
+    #         elif isinstance(atrib, datetime):
+    #             if atrib.tzinfo is not None:
+    #                 ts = atrib.replace(tzinfo=None)
+    #             else:
+    #                 ts = atrib
+    #             result[key] =  ts.isoformat("T") + "Z"
 
-            else:
-                if atrib is not None:
-                    result[key] = atrib
+    #         else:
+    #             if atrib is not None:
+    #                 result[key] = atrib
 
-        return result
+    #     return result
     
 
     def get_public_attributes(self, very_deep_copy=False):
