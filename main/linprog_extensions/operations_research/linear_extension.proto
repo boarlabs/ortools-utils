@@ -155,11 +155,10 @@ message ReferenceMPModel {
 
 
 message ExtendedMPModel {
-    oneof model_type {
-        MPModelProto concrete_model =1;
-        ReferenceMPModel reference_model =2;
-        ExpressionMPModel expression_model =3;
-    }
+    
+    optional MPModelProto concrete_model =1;
+    optional ReferenceMPModel reference_model =2;
+    optional ExpressionMPModel expression_model =3;
 
 }
 

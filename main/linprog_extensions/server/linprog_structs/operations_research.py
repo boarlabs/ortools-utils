@@ -617,13 +617,9 @@ class ReferenceMPModel(betterproto.Message):
 
 @dataclass
 class ExtendedMPModel(betterproto.Message):
-    concrete_model: "MPModelProto" = betterproto.message_field(1, group="model_type")
-    reference_model: "ReferenceMPModel" = betterproto.message_field(
-        2, group="model_type"
-    )
-    expression_model: "ExpressionMPModel" = betterproto.message_field(
-        3, group="model_type"
-    )
+    concrete_model: "MPModelProto" = betterproto.message_field(1)
+    reference_model: "ReferenceMPModel" = betterproto.message_field(2)
+    expression_model: "ExpressionMPModel" = betterproto.message_field(3)
 
 
 @dataclass
