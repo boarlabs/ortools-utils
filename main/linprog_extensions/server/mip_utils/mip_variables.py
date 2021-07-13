@@ -86,9 +86,9 @@ class MipVariablePointer:
     def mipmodel(self, mipmodel):
         self._mipmodel = mipmodel
 
-    # def add_mipmodel(self, mipmodel):
-    #     self.mipmodel = mipmodel
-    #     return
+    def add_mipmodel(self, mipmodel):
+        self._mipmodel = mipmodel
+        return
 
     def get_variable(self):
         if not self.variable:
