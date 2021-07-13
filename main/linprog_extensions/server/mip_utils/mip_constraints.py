@@ -4,9 +4,9 @@ from typing import List, Optional
 
 from operations_research import linear_solver_pb2
 
-from mip_client_utils import MipModel
+from . import MipModel
 
-from mip_client_utils import MipVariablePointer, MipVariableArray
+from . import MipVariablePointer, MipVariableArray
 
 
 class MipConstraintPointer:

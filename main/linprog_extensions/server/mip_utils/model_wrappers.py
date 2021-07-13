@@ -1,9 +1,9 @@
 from operations_research import linear_solver_pb2
 
-from mip_client_utils import MipVariableArray
+from . import MipVariableArray
 
-import grpc
-from operations_research import mip_pb2_grpc
+# import grpc
+# from operations_research import mip_pb2_grpc
 
 
 class MipModel:
@@ -30,20 +30,6 @@ class MipModel:
 
         variable_array.add_mipmodel(self)
 
-    # def build_variable_array(
-    #     self,
-    #     variable_array: MipVariableArray,
-    # ):
-    #     variable_index_list = list()
-    #     for variable_pointer in variable_array.variable_pointer_list:
-
-    #         index = variable_pointer.attach_mipmodel(self)
-    #         variable_index_list.append(index)
-    #     # self.model.variable.extend(variable_array.variable_list)
-
-    #     # model_variables_end_index = len(self.model.variable)
-
-    #     variable_array.add_mipmodel(self, variable_index_list)
 
     def append_variable(self, variable_pointer, tag=None):
         if tag:
@@ -119,17 +105,6 @@ class MipModel:
         expression.attach_mipmodel()
         return
 
-    def append_expression_array(self, expression_array, tag=None):
-
-        if tag:
-            self.expressions[tag] = expression_array
-
-        expression_array.add_mipmodel(self)
-        return
-
-    # def build_expression_array(self, expression_array):
-    #     expression_array.attach_mipmodel()
-    #     return
 
     def append_constraint(self, constraint_pointer, tag=None):
         if tag:
@@ -144,18 +119,7 @@ class MipModel:
         constraint_pointer.build_constraint()
         return
 
-    def append_constraint_array(
-        self,
-        constraint_pointer_array,
-        tag=None,
-    ):
-
-        if tag:
-            self.constraint_pointers[tag] = constraint_pointer_array
-
-        # constraint_pointer_array.set_coefficients()
-        return
-
+  
     def append_model(self, mipmodel, tag=None):
 
         # self.model.variable.extend(mipmodel.model.variable)
@@ -201,25 +165,68 @@ class MipModel:
         for key in self.expressions:
             self.build_expression(self.expressions[key])
 
-    def solve_model(
-        self,
-        maximize: bool = True,
-        solver_type: str = None,
-        target: str = "0.0.0.0:5050",
-    ):
 
-        if solver_type == "GLOP_LINEAR_PROGRAMMING":
-            solver = linear_solver_pb2.MPModelRequest.SolverType.GLOP_LINEAR_PROGRAMMING
 
-        self.model.maximize = maximize
 
-        self.model_request.solver_type = solver
+    # def append_constraint_array(
+    #     self,
+    #     constraint_pointer_array,
+    #     tag=None,
+    # ):
 
-        options = [('grpc.max_receive_message_length', 1000 * 1024 * 1024)]
+    #     if tag:
+    #         self.constraint_pointers[tag] = constraint_pointer_array
 
-        with grpc.insecure_channel(target, options = options) as channel:
+    #     # constraint_pointer_array.set_coefficients()
+    #     return
+
+    # def append_expression_array(self, expression_array, tag=None):
+
+    #     if tag:
+    #         self.expressions[tag] = expression_array
+
+    #     expression_array.add_mipmodel(self)
+    #     return
+
+    # def build_expression_array(self, expression_array):
+    #     expression_array.attach_mipmodel()
+    #     return
+
+    # def build_variable_array(
+    #     self,
+    #     variable_array: MipVariableArray,
+    # ):
+    #     variable_index_list = list()
+    #     for variable_pointer in variable_array.variable_pointer_list:
+
+    #         index = variable_pointer.attach_mipmodel(self)
+    #         variable_index_list.append(index)
+    #     # self.model.variable.extend(variable_array.variable_list)
+
+    #     # model_variables_end_index = len(self.model.variable)
+
+    #     variable_array.add_mipmodel(self, variable_index_list)
+
+
+    # def solve_model(
+    #     self,
+    #     maximize: bool = True,
+    #     solver_type: str = None,
+    #     target: str = "0.0.0.0:5050",
+    # ):
+
+    #     if solver_type == "GLOP_LINEAR_PROGRAMMING":
+    #         solver = linear_solver_pb2.MPModelRequest.SolverType.GLOP_LINEAR_PROGRAMMING
+
+    #     self.model.maximize = maximize
+
+    #     self.model_request.solver_type = solver
+
+    #     options = [('grpc.max_receive_message_length', 1000 * 1024 * 1024)]
+
+    #     with grpc.insecure_channel(target, options = options) as channel:
 	        
-            stub = mip_pb2_grpc.MPServiceStub(channel)
-            self.model_solution = stub.MPModel(self.model_request)
+    #         stub = mip_pb2_grpc.MPServiceStub(channel)
+    #         self.model_solution = stub.MPModel(self.model_request)
 
-        ck = 1
+    #     ck = 1

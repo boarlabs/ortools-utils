@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional, Union
 
 
-from mip_client_utils import (
+from . import (
     MipVariablePointer,
     MipVariableArray,
     MipConstraintPointer,
