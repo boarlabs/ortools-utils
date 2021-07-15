@@ -52,7 +52,7 @@ class MipExpression:
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
 
-        self.mipmodel = None
+        self._mipmodel = None
         # Here we will need to pay attention to  the decision of how to set the mipmodel of the expression,
         # depending on if the variables have already a mipmodel are not
 
@@ -70,6 +70,16 @@ class MipExpression:
         if objective_coefficient:
             self.add_objective_coefficient(self, objective_coefficient, 1)
 
+        return
+
+    @property
+    def mipmodel(self):
+        return self._mipmodel
+
+    @mipmodel.setter
+    def mipmodel(self, mipmodel):
+        self._mipmodel = mipmodel
+    
     def list_variable_coefficients(self):
 
         variables, coefficients = self._list_variable_coefficients_recursive(self)
@@ -210,7 +220,7 @@ class MipExpression:
 
     #     pass
 
-    def attach_mipmodel(self, mipmodel=None):
+    def build(self):
 
         """
         okay so this is supposed to be similar to that of the variable.
@@ -289,9 +299,9 @@ class MipExpression:
 
         return mipmodel
 
-    def add_mipmodel(self, mipmodel):
+    
 
-        self.mipmodel = mipmodel
+
 
 
 class MipExpressionArray:

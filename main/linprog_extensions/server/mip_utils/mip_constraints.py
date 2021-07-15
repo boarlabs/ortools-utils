@@ -10,19 +10,17 @@ from . import MipVariablePointer, MipVariableArray
 
 
 class MipConstraintPointer:
+
     def __init__(
         self,
-        var_index: Optional[List[int]] = None,
-        variables: Optional[List[MipVariablePointer]] = None,
-        coefficient: Optional[List[float]] = None,
-        lower_bound: Optional[float] = None,
-        upper_bound: Optional[float] = None,
-        name: Optional[str] = None,
-        is_lazy: Optional[bool] = None,
-        mipmodel: Optional[MipModel] = None,
+        variables: Optional[List[MipVariablePointer]] = list(),
+        coefficient: Optional[List[float]] = list(),
+        lower_bound: Optional[float] = float('-inf'),
+        upper_bound: Optional[float] = float('inf'),
+        name: Optional[str] = str(),
+        is_lazy: Optional[bool] = False,
     ):
 
-        self.var_index = var_index
         self.variables = variables
         self.coefficient = coefficient
         self.lower_bound = lower_bound
@@ -30,10 +28,9 @@ class MipConstraintPointer:
         self.name = name
         self.is_lazy = is_lazy
 
+        self.var_index = list()
         self.mipconstraint = None
         self._mipmodel = None
-        
-        self.mipmodel = mipmodel
         return
 
     @property
@@ -44,16 +41,11 @@ class MipConstraintPointer:
     def mipmodel(self, mipmodel):
         self._mipmodel = mipmodel
 
+    def build(self):
 
-    def build_constraint(self):
-
-        if self.variables:
-            self.var_index = self._get_variables_index()
-
+        self.var_index = self._get_variables_index()
         lower_bound, upper_bound = self.update_rhs_for_expressions()
-
-        assert self.var_index != None
-
+        
         self.mipconstraint = linear_solver_pb2.MPConstraintProto(
             var_index=self.var_index,
             coefficient=self.coefficient,
@@ -63,7 +55,7 @@ class MipConstraintPointer:
             is_lazy=self.is_lazy,
         )
 
-        self._add_constraint_to_mipmodel()
+        self._mipmodel.model.constraint.append(self.mipconstraint)
         return
 
     def update_rhs_for_expressions(self):
@@ -71,9 +63,7 @@ class MipConstraintPointer:
         upper_bound = self.upper_bound
 
         for term in self.variables:
-
             if hasattr(term, "variable_list"):
-
                 lower_bound, upper_bound = term.adjust_right_handside_for_paramters(
                     lower_bound,
                     upper_bound,
@@ -81,10 +71,10 @@ class MipConstraintPointer:
 
         return lower_bound, upper_bound
 
-    def get_constraint(self):
-        if not self.mipconstraint:
-            self.build_constraint()
-        return self.mipconstraint
+    # def get_constraint(self):
+    #     if not self.mipconstraint:
+    #         self.build()
+    #     return self.mipconstraint
 
     def _get_variables_index(self):
         """
@@ -93,7 +83,6 @@ class MipConstraintPointer:
         a constraint-pointer that is not tied to any model.
         In order to generate a constraint that is tied to a model, we need to define a model for the constraint.
         We can add a MipModel to a constraint-pointer manually or as part of getting the indicies of the variables.
-
         """
         var_index_list = list()
 
@@ -107,29 +96,24 @@ class MipConstraintPointer:
             assert mipmodel != None
             self.add_mipmodel(mipmodel)
 
+        if not self.variables:
+            ValueError("The constraint does not have any variables")
+
         for variable in self.variables:
             if isinstance(variable, MipVariablePointer):
-
-                if not variable.mipmodel_attached:
-                    var_index = variable.attach_mipmodel(self.mipmodel)
-                    var_index_list.append(var_index)
-                elif (variable.mipmodel_attached) and (
-                    variable.mipmodel != self.mipmodel
-                ):
-
+                if not (variable.mipmodel == self.mipmodel):
                     ValueError(
                         "The variable pointer MipModel is not the same as the constraint MipModel"
                     )
-                    # ToDo should make this a warning and change the mipmodel of the variable.
-                    # Can  a variable pointer have multiple mipmodels?
-                else:  # i.e. if the variable.mipmodel exist and it is the same as the constraint mipmodel
-                    var_index = variable.mipmodel_var_index
-                    var_index_list.append(var_index)
-
+                elif not variable.mipmodel_attached:
+                    variable.build()
+                
+                var_index_list.append(variable.mipmodel_var_index)
+                    
             elif hasattr(variable, "variable_list"):  # i.e. if it is an expresssion
-
                 if not variable.mipmodel_attached:
-                    variable.attach_mipmodel()
+                    variable.build()
+                # getting the variable indices of an expression could be inside it,right?
 
                 var_index = [
                     variable_pointer.mipmodel_var_index
@@ -137,19 +121,10 @@ class MipConstraintPointer:
                 ]
                 var_index_list += var_index
 
-            else:  # i.e. if the variable is variableproto
-                var_index = self.mipmodel.append_variable(variable)
-                var_index_list.append(var_index)
-
         return var_index_list
 
 
-    def _add_constraint_to_mipmodel(self):
-
-        self.mipmodel.model.constraint.append(self.mipconstraint)
-
-
-
+#Not Ready
 class MipConstraintArrayVariable:
 
     """
@@ -224,7 +199,7 @@ class MipConstraintArrayVariable:
 
         return mipmodel
 
-
+#Not Ready
 class MipConstraintArray:
     def __init__(
         self,

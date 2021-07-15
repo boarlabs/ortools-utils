@@ -19,15 +19,14 @@ class MipModel:
 
         self.parent_mipmodel = None
         self.model = linear_solver_pb2.MPModelProto()
-        self.model_var_end_index = None
+        # self.model_var_end_index = None
         # why we needed this? seems related to adding one mipmodel to another?
         return
 
     def add_parameter(
         self,
         parameter,
-    ):
-         
+    ):     
         parameter.mipmodel = self
         self.parameters.append(parameter)
         return
@@ -102,33 +101,21 @@ class MipModel:
 
             variable_pointer.attach_mipmodel(variable_index_list)
         else:
-            variable_pointer.build_variable()
+            variable_pointer.make_variable_proto()
             self.model.variable.append(variable_pointer.variable)
             model_variable_end_index = len(self.model.variable) - 1
             _ = variable_pointer.attach_mipmodel(model_variable_end_index)
         return
-   
-    def build_expression(self, expression):
-        expression.attach_mipmodel()
-        return
 
-    def build_constraint(self, constraint_pointer):
-        """
-            the input can be a constraint pointer or a constraintPinterArray
-        """
-        constraint_pointer.build_constraint()
-        return
-
-    def build_model(self):
+    def build(self):
 
         for variable in self.varibale_pointers:
-            self.build_variable(variable)
-
+            variable.build()
+            # self.build_variable(variable)
         for constraint in self.constraint_pointers:
-            self.build_constraint(constraint)
-
+            constraint.build()
         for expression in self.expressions:
-            self.build_expression(expression)
+            expression.build()
         return
 
 

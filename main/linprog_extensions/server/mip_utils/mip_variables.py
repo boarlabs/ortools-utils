@@ -6,6 +6,7 @@ from operations_research import linear_solver_pb2
 
 
 class MipParameterPointer:
+
     def __init__(
         self,
         name: str = None,
@@ -14,6 +15,7 @@ class MipParameterPointer:
         self._value = value
         self._name = name
         self._mipmodel = None
+        return
 
     @property
     def value(self):
@@ -47,36 +49,31 @@ class MipParameterPointer:
 
         return
 
-    # def add_mipmodel(self, mipmodel):
-    #     self._mipmodel = mipmodel
-    #     return
-  
-
 
 class MipVariablePointer:
     def __init__(
         self,
-        name: str = None,
-        is_integer: bool = False,
-        objective_coefficient: MipParameterPointer = MipParameterPointer(),
-        lower_bound: float = None,
-        upper_bound: float = None,
+        name: Optional[str] = str(),
+        is_integer: Optional[bool] = False,
+        objective_coefficient: Optional[MipParameterPointer] = MipParameterPointer(),
+        lower_bound: Optional[float] = float('-inf'),
+        upper_bound: Optional[float] = float('inf'),
     ):
 
         ## why I have put the objective coefficient and lb, and ub as parameters???
         ## maybe we want a variable that we can objective coefficient at any time?
         ## do we need a parameter for that?
 
-        self.variable = None
         self.name = name
         self.is_integer = is_integer
         self.objective_coefficient = objective_coefficient
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
 
+        self.variable = None
         self._mipmodel = None
-        self._mipmodel_var_index = None
-        self._mipmodel_attached = False
+        self.mipmodel_var_index = None
+        self.mipmodel_attached = False
         return
 
     @property
@@ -87,12 +84,12 @@ class MipVariablePointer:
     def mipmodel(self, mipmodel):
         self._mipmodel = mipmodel
 
-    def get_variable(self):
-        if not self.variable:
-            self.build_variable()
-        return self.variable
+    # def get_variable(self):
+    #     if not self.variable:
+    #         self.make_variable_proto()
+    #     return self.variable
 
-    def build_variable(self):
+    def make_variable_proto(self):
 
         def get_value(obj):
             try:
@@ -113,16 +110,16 @@ class MipVariablePointer:
 
     def attach_mipmodel(
         self,
-        var_index=None,
+        var_index: int = None,
     ):
         """
-        since we can have a variable that is not attached to any MPmodels, the VariablePointer can also be "Built"
-        without having the mipmodel (note this is not the case for the MPconstraint and thus MipConstraintPointer).
-        So here when we attach/append a  variable to a MipModel.
-        This method can be called in two ways, either by MipVariablePointer and giving a MipModel, or by a mipmodel and giving a MipVariablePointer
+            since we can have a variable that is not attached to any MPmodels, the VariablePointer can also be "Built"
+            without having the mipmodel (note this is not the case for the MPconstraint and thus MipConstraintPointer).
+            So here when we attach/append a  variable to a MipModel.
+            This method can be called in two ways, either by MipVariablePointer and giving a MipModel, or by a mipmodel and giving a MipVariablePointer
         """
 
-        assert (not self._mipmodel_attached)
+        assert (not self.mipmodel_attached)
         if  not self._mipmodel:  
             ValueError("A MipModelPointer instance is not defined for the MipVairablePointer instance")
 
@@ -139,16 +136,25 @@ class MipVariablePointer:
             ## so at this point we just need to make sure that a MipModelPointer is defined for the variable 
             ## and that the variable is not already attached to it.
             ## then we pass the VariablePointer to the MipModelPointer, to add it(which again will call this method with the index
-            self.build_variable()
+            self.make_variable_proto()
             self._mipmodel.build_variable(self)
-
 
         ## 2- when the mipmodel is calling the method 
         ## at this time the variable associated with VariablePointer is added to the model of the Modelpointer
         ## we provide the model index to this pointer
-        self._mipmodel_var_index = var_index
-        self._mipmodel_attached = True
-        return self._mipmodel_var_index
+        self.mipmodel_var_index = var_index
+        self.mipmodel_attached = True
+        return self.mipmodel_var_index
+
+    def build(self):
+        self.make_variable_proto()
+        self._mipmodel.model.variable.append(self.variable)
+        self.mipmodel_var_index = len(self._mipmodel.model.variable) - 1
+        self.mipmodel_attached = True
+        return
+
+
+
 
 
 
@@ -177,7 +183,7 @@ class MipVariablePointer:
         self.build_variable(objective_coefficient=self.objective_coefficient)
 
 
-
+## Not Ready
 class MipVariableArray:
     def __init__(
         self,
