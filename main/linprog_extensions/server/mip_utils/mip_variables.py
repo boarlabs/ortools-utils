@@ -9,11 +9,11 @@ class MipParameterPointer:
 
     def __init__(
         self,
-        name: str = None,
-        value: float = None
+        value: float = None,
+        name: str = str(),
     ):
         self._value = value
-        self._name = name
+        self.name = name
         self._mipmodel = None
         return
 
@@ -36,19 +36,25 @@ class MipParameterPointer:
 
     def add_value(
         self,
-        parameter: Union[MipParameterPointer, float]
+        parameter: MipParameterPointer,
     ):
-        assert(isinstance(parameter, MipParameterPointer) or isinstance(parameter, float))
+        assert(isinstance(parameter, MipParameterPointer))
+        parameter_value = parameter.value
+        if not parameter_value:
+            parameter_value = 0
+
         if not self._value:
             self._value = 0
-
-        try:
-            self._value += parameter.value
-        except:
-            self._value += parameter
-
+         
+        self._value += parameter_value
         return
 
+    def build(self):
+        value = self._value
+        if not value:
+            value = 0 
+
+        return value
 
 class MipVariablePointer:
     def __init__(
@@ -63,6 +69,12 @@ class MipVariablePointer:
         ## why I have put the objective coefficient and lb, and ub as parameters???
         ## maybe we want a variable that we can objective coefficient at any time?
         ## do we need a parameter for that?
+        assert(isinstance(objective_coefficient, MipParameterPointer))
+        assert(isinstance(lower_bound, float))
+        assert(isinstance(upper_bound, float))
+        assert(isinstance(is_integer, bool))
+        assert(isinstance(name, str))
+
 
         self.name = name
         self.is_integer = is_integer
@@ -86,17 +98,17 @@ class MipVariablePointer:
 
     def make_variable_proto(self):
 
-        def get_value(obj):
-            try:
-                value = obj.value
-            except:
-                value = obj
-            return value
+        # def get_value(obj):
+        #     try:
+        #         value = obj.value
+        #     except:
+        #         value = obj
+        #     return value
 
         self.variable = linear_solver_pb2.MPVariableProto(
             name=self.name,
             is_integer=self.is_integer,
-            objective_coefficient=get_value(self.objective_coefficient),
+            objective_coefficient= self.objective_coefficient.build(),
             lower_bound=self.lower_bound,
             upper_bound=self.upper_bound,
         )
@@ -104,31 +116,29 @@ class MipVariablePointer:
         return
 
     def build(self):
+        ## Note: right now everytime we build the variable pointer, a new variable is added to the model
+        ## would be good to ifx this; but I think I don't need this right now
         self.make_variable_proto()
         self._mipmodel.model.variable.append(self.variable)
         self.mipmodel_var_index = len(self._mipmodel.model.variable) - 1
         self.mipmodel_attached = True
         return
 
-    ## Hossein (2021/7/12) this is mainly related to expressions, will get back to this later
     def add_objective_coefficient(
         self,
         objective_coefficient: Optional[MipParameterPointer],
     ):
 
-        if self.objective_coefficient.value:
-            # this is mainly needed for the case where multiple expressions point to the same variablePointer
-            # if isinstance(self.objective_coefficient, MipParameterPointer):
-            self.objective_coefficient.add_value(objective_coefficient)
-
-            # elif isinstance(objective_coefficient, MipParameterPointer):
-                # objective_coefficient.add_value(self.objective_coefficient)
-                # self.objective_coefficient = objective_coefficient
-            # else:
-                # self.objective_coefficient += objective_coefficient
-
-        else:
-            self.objective_coefficient = objective_coefficient
+        # if not self.objective_coefficient.value:
+        #     self.objective_coefficient = objective_coefficient
+        # if isinstance(self.objective_coefficient, MipParameterPointer):
+        self.objective_coefficient.add_value(objective_coefficient)
+        
+        # elif isinstance(objective_coefficient, MipParameterPointer):
+            # objective_coefficient.add_value(self.objective_coefficient)
+            # self.objective_coefficient = objective_coefficient
+        # else:
+            # self.objective_coefficient += objective_coefficient
         return
 
 
