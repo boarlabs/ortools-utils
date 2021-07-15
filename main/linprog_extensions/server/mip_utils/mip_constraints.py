@@ -45,7 +45,7 @@ class MipConstraintPointer:
 
         self.var_index = self._get_variables_index()
         lower_bound, upper_bound = self.update_rhs_for_expressions()
-        
+
         self.mipconstraint = linear_solver_pb2.MPConstraintProto(
             var_index=self.var_index,
             coefficient=self.coefficient,
@@ -70,11 +70,6 @@ class MipConstraintPointer:
                 )
 
         return lower_bound, upper_bound
-
-    # def get_constraint(self):
-    #     if not self.mipconstraint:
-    #         self.build()
-    #     return self.mipconstraint
 
     def _get_variables_index(self):
         """

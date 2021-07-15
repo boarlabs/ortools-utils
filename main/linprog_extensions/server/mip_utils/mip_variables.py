@@ -84,11 +84,6 @@ class MipVariablePointer:
     def mipmodel(self, mipmodel):
         self._mipmodel = mipmodel
 
-    # def get_variable(self):
-    #     if not self.variable:
-    #         self.make_variable_proto()
-    #     return self.variable
-
     def make_variable_proto(self):
 
         def get_value(obj):
@@ -108,44 +103,6 @@ class MipVariablePointer:
 
         return
 
-    def attach_mipmodel(
-        self,
-        var_index: int = None,
-    ):
-        """
-            since we can have a variable that is not attached to any MPmodels, the VariablePointer can also be "Built"
-            without having the mipmodel (note this is not the case for the MPconstraint and thus MipConstraintPointer).
-            So here when we attach/append a  variable to a MipModel.
-            This method can be called in two ways, either by MipVariablePointer and giving a MipModel, or by a mipmodel and giving a MipVariablePointer
-        """
-
-        assert (not self.mipmodel_attached)
-        if  not self._mipmodel:  
-            ValueError("A MipModelPointer instance is not defined for the MipVairablePointer instance")
-
-        ## not sure if the mechanism of creating the loop between this MipVariable and MipModel is the best
-        ##  or most straight forward, but it did seem interesting to me at the time.        
-        ## so how does this work? 
-        ## 1- The VariablePointer method build_variable is called directly from variablepointer.
-        ## or the build_variableArray method of the mipmodel
-        ## in that case the var_index would not be provided.
-        ## this is not the preffered way though.
-
-        if not var_index: 
-            # i.e. the mipVariableArray is calling the method/ or the build_variableArray method of the mipmodel
-            ## so at this point we just need to make sure that a MipModelPointer is defined for the variable 
-            ## and that the variable is not already attached to it.
-            ## then we pass the VariablePointer to the MipModelPointer, to add it(which again will call this method with the index
-            self.make_variable_proto()
-            self._mipmodel.build_variable(self)
-
-        ## 2- when the mipmodel is calling the method 
-        ## at this time the variable associated with VariablePointer is added to the model of the Modelpointer
-        ## we provide the model index to this pointer
-        self.mipmodel_var_index = var_index
-        self.mipmodel_attached = True
-        return self.mipmodel_var_index
-
     def build(self):
         self.make_variable_proto()
         self._mipmodel.model.variable.append(self.variable)
@@ -153,34 +110,66 @@ class MipVariablePointer:
         self.mipmodel_attached = True
         return
 
-
-
-
-
-
     ## Hossein (2021/7/12) this is mainly related to expressions, will get back to this later
     def add_objective_coefficient(
         self,
-        objective_coefficient: Optional[Union[MipParameterPointer, float]],
+        objective_coefficient: Optional[MipParameterPointer],
     ):
 
-        if self.objective_coefficient:
+        if self.objective_coefficient.value:
             # this is mainly needed for the case where multiple expressions point to the same variablePointer
-            # Q: Does the variable needs to know which expressions are pointing to it though?
-            if isinstance(self.objective_coefficient, MipParameterPointer):
-                self.objective_coefficient.add_value(objective_coefficient)
+            # if isinstance(self.objective_coefficient, MipParameterPointer):
+            self.objective_coefficient.add_value(objective_coefficient)
 
-            elif isinstance(objective_coefficient, MipParameterPointer):
-
-                objective_coefficient.add_value(self.objective_coefficient)
-                self.objective_coefficient = objective_coefficient
-            else:
-                self.objective_coefficient += objective_coefficient
+            # elif isinstance(objective_coefficient, MipParameterPointer):
+                # objective_coefficient.add_value(self.objective_coefficient)
+                # self.objective_coefficient = objective_coefficient
+            # else:
+                # self.objective_coefficient += objective_coefficient
 
         else:
             self.objective_coefficient = objective_coefficient
+        return
 
-        self.build_variable(objective_coefficient=self.objective_coefficient)
+
+
+    # def attach_mipmodel(
+    #     self,
+    #     var_index: int = None,
+    # ):
+    #     """
+    #         since we can have a variable that is not attached to any MPmodels, the VariablePointer can also be "Built"
+    #         without having the mipmodel (note this is not the case for the MPconstraint and thus MipConstraintPointer).
+    #         So here when we attach/append a  variable to a MipModel.
+    #         This method can be called in two ways, either by MipVariablePointer and giving a MipModel, or by a mipmodel and giving a MipVariablePointer
+    #     """
+
+    #     assert (not self.mipmodel_attached)
+    #     if  not self._mipmodel:  
+    #         ValueError("A MipModelPointer instance is not defined for the MipVairablePointer instance")
+
+    #     ## not sure if the mechanism of creating the loop between this MipVariable and MipModel is the best
+    #     ##  or most straight forward, but it did seem interesting to me at the time.        
+    #     ## so how does this work? 
+    #     ## 1- The VariablePointer method build_variable is called directly from variablepointer.
+    #     ## or the build_variableArray method of the mipmodel
+    #     ## in that case the var_index would not be provided.
+    #     ## this is not the preffered way though.
+
+    #     if not var_index: 
+    #         # i.e. the mipVariableArray is calling the method/ or the build_variableArray method of the mipmodel
+    #         ## so at this point we just need to make sure that a MipModelPointer is defined for the variable 
+    #         ## and that the variable is not already attached to it.
+    #         ## then we pass the VariablePointer to the MipModelPointer, to add it(which again will call this method with the index
+    #         self.make_variable_proto()
+    #         self._mipmodel.build_variable(self)
+
+    #     ## 2- when the mipmodel is calling the method 
+    #     ## at this time the variable associated with VariablePointer is added to the model of the Modelpointer
+    #     ## we provide the model index to this pointer
+    #     self.mipmodel_var_index = var_index
+    #     self.mipmodel_attached = True
+    #     return self.mipmodel_var_index
 
 
 ## Not Ready
