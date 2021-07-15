@@ -31,11 +31,19 @@ class MipConstraintPointer:
         self.is_lazy = is_lazy
 
         self.mipconstraint = None
+        self._mipmodel = None
+        
+        self.mipmodel = mipmodel
+        return
 
-        self.mipmodel = None
+    @property
+    def mipmodel(self):
+        return self._mipmodel
 
-        if mipmodel:
-            self.add_mipmodel(mipmodel)
+    @mipmodel.setter
+    def mipmodel(self, mipmodel):
+        self._mipmodel = mipmodel
+
 
     def build_constraint(self):
 
@@ -135,12 +143,11 @@ class MipConstraintPointer:
 
         return var_index_list
 
-    def add_mipmodel(self, mipmodel: MipModel):
-        self.mipmodel = mipmodel
 
     def _add_constraint_to_mipmodel(self):
 
         self.mipmodel.model.constraint.append(self.mipconstraint)
+
 
 
 class MipConstraintArrayVariable:

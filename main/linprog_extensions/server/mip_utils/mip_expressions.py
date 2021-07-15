@@ -23,9 +23,6 @@ class MipExpression:
     an expression it is transfered to it's composing variables (pointers).
     Important: We need to remember that we might have multiple expressions that have different comositions of
     the same variables, But each variable can only have one coefficient in the objective
-
-
-
     """
 
     def __init__(

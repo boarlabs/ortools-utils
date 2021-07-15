@@ -5,15 +5,6 @@ from typing import List, Optional, Union
 from operations_research import linear_solver_pb2
 
 
-
-# class Reference:
-#     def __init__(self, parameter):
-#         self.param = parameter
-#     def get(self):
-#         return self.param
-#     def set(self, parameter):
-#         self.param = parameter
-
 class MipParameterPointer:
     def __init__(
         self,
@@ -22,6 +13,7 @@ class MipParameterPointer:
     ):
         self._value = value
         self._name = name
+        self._mipmodel = None
 
     @property
     def value(self):
@@ -31,6 +23,14 @@ class MipParameterPointer:
     def value(self, value):
         self._value = value
         return
+    
+    @property
+    def mipmodel(self):
+        return self._mipmodel
+
+    @mipmodel.setter
+    def mipmodel(self, mipmodel):
+        self._mipmodel = mipmodel
 
     def add_value(
         self,
@@ -47,9 +47,10 @@ class MipParameterPointer:
 
         return
 
-    # def __getattr__(self, name=None):
-    #     return self.obj
-    # def set_value(self, obj):
+    # def add_mipmodel(self, mipmodel):
+    #     self._mipmodel = mipmodel
+    #     return
+  
 
 
 class MipVariablePointer:
@@ -58,8 +59,8 @@ class MipVariablePointer:
         name: str = None,
         is_integer: bool = False,
         objective_coefficient: MipParameterPointer = MipParameterPointer(),
-        lower_bound: MipParameterPointer = MipParameterPointer(),
-        upper_bound: MipParameterPointer = MipParameterPointer(),
+        lower_bound: float = None,
+        upper_bound: float = None,
     ):
 
         ## why I have put the objective coefficient and lb, and ub as parameters???
@@ -86,10 +87,6 @@ class MipVariablePointer:
     def mipmodel(self, mipmodel):
         self._mipmodel = mipmodel
 
-    def add_mipmodel(self, mipmodel):
-        self._mipmodel = mipmodel
-        return
-
     def get_variable(self):
         if not self.variable:
             self.build_variable()
@@ -108,8 +105,8 @@ class MipVariablePointer:
             name=self.name,
             is_integer=self.is_integer,
             objective_coefficient=get_value(self.objective_coefficient),
-            lower_bound=get_value(self.lower_bound),
-            upper_bound=get_value(self.upper_bound),
+            lower_bound=self.lower_bound,
+            upper_bound=self.upper_bound,
         )
 
         return
@@ -153,11 +150,6 @@ class MipVariablePointer:
         self._mipmodel_attached = True
         return self._mipmodel_var_index
 
-    # def reattach_mipmodel(self):
-    #     ## what is the story of attach and re-attach?
-    #     self.build_variable()
-    #     self._mipmodel.update_variable(self)
-    #     return
 
 
     ## Hossein (2021/7/12) this is mainly related to expressions, will get back to this later

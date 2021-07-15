@@ -10,101 +10,80 @@ class MipModel:
     
     def __init__(self):
         
-        ## if we are supposed to be adding this mipmodel to another One
-        #  then all the paramters, variables, constraints, etc, need to have a tag
-        # when adding a mipvariablePointer to this MipModel, the user need to provide a tag
-        # but currently we have left that as optional
-        # what happens if a user adds a variablePointer but without tag, the model does not complain
-        # but later when adding it to another one it is going to be wrong? am I missing here?
-
-        self.varibale_pointers = dict()
-        self.parameters = dict()
-        self.constraint_pointers = dict()
-        self.expressions = dict()
-        self.mipmodels = dict()
+        # maybe later I can edit the init so that one could instantiate with vairables, etc., provided.
+        self.varibale_pointers = list()
+        self.parameters = list()
+        self.constraint_pointers = list()
+        self.expressions = list()
+        self.mipmodels = list()
 
         self.parent_mipmodel = None
+        self.model = linear_solver_pb2.MPModelProto()
         self.model_var_end_index = None
         # why we needed this? seems related to adding one mipmodel to another?
         return
 
-    def append_parameter(
+    def add_parameter(
         self,
-        parameter_pointer,
-        tag: str = None,
+        parameter,
     ):
-        if tag: 
-            ## what is the usage of this tag?
-            ## if the user provides this tag it will be added to the dictionary 
-            ## of named parameters
-            self.parameters[tag] = parameter_pointer
+         
+        parameter.mipmodel = self
+        self.parameters.append(parameter)
         return
 
-    def append_variable(
+    def add_variable(
         self,
         variable_pointer,
-        tag: str = None,
     ):
-        if tag: 
-            ## seems same as paramter, the MPVariable has a name (which could be blank), and so is the name of the variable pointer,
-            ## here we can add the same(or different) name to the dictionary of the model variables
-            self.varibale_pointers[tag] = variable_pointer
-
-        ## Q: if we are adding a variable without tag, how would it affect us?
-        variable_pointer.add_mipmodel(self)
+        
+        variable_pointer.mipmodel = self
+        self.varibale_pointers.append(variable_pointer)
         return
 
-    def append_expression(
+    def add_expression(
         self,
         expression,
-        tag: str = None,
     ):
-        if tag:
-            self.expressions[tag] = expression
 
-        expression.add_mipmodel(self)
-        # okay so what needs to happen when an expression is attached to the mipmodel?
+        expression.mipmodel = self
+        self.expressions.append(expression)
+        # okay so what needs to happen when an expression is added to the mipmodel?
         # if the expression has lb/ub that will mean adding the constraints, but without it just setting the variables.
         #  setting the variables will be with attaching them with the mipmodel (if not already attahced)
         return
 
-    def append_constraint(
+    def add_constraint(
         self,
         constraint_pointer,
-        tag: str = None,
     ):
-        if tag:
-            self.constraint_pointers[tag] = constraint_pointer
-
+        self.constraint_pointers.append(constraint_pointer)
         ## so here we just adding the tag, nothing more is needed??
         return
 
-    def append_model(
+    def add_model(
         self,
         mipmodel,
-        tag: str = None
     ):
 
-        # self.model.variable.extend(mipmodel.model.variable)
-        # mipmodel.model_var_end_index = len(self.model.variable)
-        # self.model.constraint.extend(mipmodel.model.constraint)
-
-        self.mipmodels[tag] = mipmodel
+        self.mipmodels.append(mipmodel)
         mipmodel.parent_mipmodel = self
 
-        # Q: should we add variables of the child mipmodel to the parent directly or keep them under their own mipmodel?
-        for key in mipmodel.varibale_pointers:
-            mipmodel.varibale_pointers[key].add_mipmodel(self)
+        for variable in mipmodel.varibale_pointers:
+            self.add_variable(variable)
+            # mipmodel.varibale_pointers[key].add_mipmodel(self)
 
-        # for key in mipmodel.parameters:
-        #     mipmodel.parameters[key].add_mipmodel(self)
+        for parameter in mipmodel.parameters:
+            self.add_parameter(parameter)
 
-        for key in mipmodel.constraint_pointers:
-            mipmodel.constraint_pointers[key].add_mipmodel(self)
+        for constraint in mipmodel.constraint_pointers:
+            self.add_constraint(constraint)
+            # mipmodel.constraint_pointers[key].add_mipmodel(self)
 
-        for key in mipmodel.expressions:
-            mipmodel.expressions[key].add_mipmodel(self)
-        # Q; What about the mipmodels that have child models themselves, we should at least put assert here.
+        for expression in mipmodel.expressions:
+            self.add_expression(expression)
+            # mipmodel.expressions[key].add_mipmodel(self)
+
         return
 
     def build_variable(
@@ -134,7 +113,6 @@ class MipModel:
         return
 
     def build_constraint(self, constraint_pointer):
-
         """
             the input can be a constraint pointer or a constraintPinterArray
         """
@@ -143,20 +121,15 @@ class MipModel:
 
     def build_model(self):
 
-        self.model_request = linear_solver_pb2.MPModelRequest()
-        self.model = self.model_request.model
+        for variable in self.varibale_pointers:
+            self.build_variable(variable)
 
-        for key in self.mipmodels:
-            self.mipmodels[key].build_model()
+        for constraint in self.constraint_pointers:
+            self.build_constraint(constraint)
 
-        for key in self.varibale_pointers:
-            self.build_variable(self.varibale_pointers[key])
-
-        for key in self.constraint_pointers:
-            self.build_constraint(self.constraint_pointers[key])
-
-        for key in self.expressions:
-            self.build_expression(self.expressions[key])
+        for expression in self.expressions:
+            self.build_expression(expression)
+        return
 
 
     # def update_variable(
