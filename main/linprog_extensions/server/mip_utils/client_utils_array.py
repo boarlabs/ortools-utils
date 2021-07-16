@@ -1,7 +1,4 @@
-import grpc
-from operations_research import mip_pb2
-from operations_research import mip_pb2_grpc
-from operations_research import linear_solver_pb2
+
 
 
 class VariableArray:

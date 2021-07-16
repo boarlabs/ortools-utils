@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional, Union
 
 
-from mip_client_utils import (
+from . import (
     MipVariablePointer,
     MipVariableArray,
     MipConstraintPointer,
@@ -23,56 +23,61 @@ class MipExpression:
     an expression it is transfered to it's composing variables (pointers).
     Important: We need to remember that we might have multiple expressions that have different comositions of
     the same variables, But each variable can only have one coefficient in the objective
-
-
-
     """
 
     def __init__(
         self,
         variable_list: List[Union[MipVariablePointer, MipExpression]],
         coefficients: List[float],
-        index_name: Optional[str] = None,
-        objective_coefficient: Optional[Union[MipParameterPointer, float]] = None,
+        name: Optional[str] = str(),
+        objective_coefficient: Optional[MipParameterPointer] = MipParameterPointer(),
         lower_bound: Optional[float] = None,
         upper_bound: Optional[float] = None,
-        mipmodel: Optional[MipModel] = None,
     ):
 
         """
-        The paramters here can actually be a parametterPointer or a regular number
-        We are dealing with variable pointers, so we need to pay attention how the actual
-        variables are cprrectly affected.
+            The paramters here can actually be a parametterPointer or a regular number
+            We are dealing with variable pointers, so we need to pay attention how the actual
+            variables are cprrectly affected.
         """
 
         assert len(coefficients) == len(variable_list)
 
-        self.index_name = index_name
+        self.name = name
         self.variable_list = variable_list
         self.variable_coefficients = coefficients
-
         self.objective_coefficient = objective_coefficient
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
 
-        self.mipmodel = None
-        # Here we will need to pay attention to  the decision of how to set the mipmodel of the expression,
-        # depending on if the variables have already a mipmodel are not
-
+        self._mipmodel = None
         self.constraint_pointers = list()
-
         self.mipmodel_attached = False
-        # we will have up to two constraints for the lower bound and upper bound limits
 
-        if lower_bound:
+        # we will have up to two constraints for the lower bound and upper bound limits
+        if lower_bound is not None:
             self.add_constraint_pointer(lower_bound=lower_bound)
 
-        if upper_bound:
+        if upper_bound is not None:
             self.add_constraint_pointer(upper_bound=upper_bound)
 
-        if objective_coefficient:
+        if objective_coefficient.value is not None:
             self.add_objective_coefficient(self, objective_coefficient, 1)
 
+        return
+
+    @property
+    def mipmodel(self):
+        return self._mipmodel
+
+    @mipmodel.setter
+    def mipmodel(self, mipmodel):
+        self._mipmodel = mipmodel
+        for constriant in self.constraint_pointers:
+            # we should have not needed to set this mipmodel for constraint
+            # given that the variable has mipmodel upon building constr
+            constriant.mipmodel = mipmodel
+    
     def list_variable_coefficients(self):
 
         variables, coefficients = self._list_variable_coefficients_recursive(self)
@@ -104,7 +109,7 @@ class MipExpression:
 
         return var_list, coef_list
 
-    def recursive_rhs_calculator(
+    def _recursive_rhs_calculator(
         self, expression_term, coefficient, lower_bound, upper_bound
     ):
 
@@ -113,7 +118,7 @@ class MipExpression:
 
         if hasattr(expression_term, "variable_list"):
             for index in range(len(expression_term.variable_list)):
-                updated_lb, updated_ub = self.recursive_rhs_calculator(
+                updated_lb, updated_ub = self._recursive_rhs_calculator(
                     expression_term.variable_list[index],
                     expression_term.variable_coefficients[index],
                     updated_lb,
@@ -123,10 +128,10 @@ class MipExpression:
 
             if isinstance(expression_term, MipParameterPointer):
 
-                if updated_lb:
+                if updated_lb is not None:
                     updated_lb += -coefficient * expression_term.value
 
-                if updated_ub:
+                if updated_ub is not None:
                     updated_ub += -coefficient * expression_term.value
 
         return updated_lb, updated_ub
@@ -137,8 +142,7 @@ class MipExpression:
         updated_ub = upper_bound
 
         for index in range(len(self.variable_list)):
-
-            updated_lb, updated_ub = self.recursive_rhs_calculator(
+            updated_lb, updated_ub = self._recursive_rhs_calculator(
                 self.variable_list[index],
                 self.variable_coefficients[index],
                 updated_lb,
@@ -175,55 +179,38 @@ class MipExpression:
     ):
 
         if hasattr(expression, "variable_list"):
-
             for index in range(len(expression.variable_list)):
-
                 self.add_objective_coefficient(
                     expression.variable_list[index],
                     objective_coefficient,
                     expression.variable_coefficients[index] * variable_coefficient,
                 )
-
                 index += 1
-
         else:
+            # if isinstance(objective_coefficient, MipParameterPointer):
+            variable_objective_coefficient = MipParameterPointer(
+                name=objective_coefficient.name,
+                value=variable_coefficient * objective_coefficient.value,
+            )
+            # else:
 
-            if isinstance(objective_coefficient, MipParameterPointer):
-
-                variable_objective_coefficient = MipParameterPointer(
-                    parameter_name=objective_coefficient.name,
-                    parameter_value=variable_coefficient * objective_coefficient.value,
-                )
-            else:
-
-                variable_objective_coefficient = (
-                    variable_coefficient * objective_coefficient
-                )
+            #     variable_objective_coefficient = (
+            #         variable_coefficient * objective_coefficient
+            #     )
 
             expression.add_objective_coefficient(variable_objective_coefficient)
-
         return
 
-    # def set_expression(
-    #     self,
-    #     objective_coefficient: Optional[Union[MipParameterPointer, float]] ,
-    #     lower_bound:Optional[Union[MipParameterPointer, float]] ,
-    #     upper_bound:Optional[Union[MipParameterPointer, float]] ,
-    # ):
-
-    #     pass
-
-    def attach_mipmodel(self, mipmodel=None):
+    def build(self):
 
         """
-        okay so this is supposed to be similar to that of the variable.
-        if we want to set some parameter of the expression we do it here.
-        Also it would Set it's variables, and Constraints.
-        It would need to have the mipmodel defined already in order to set the constraints
-        (for constraints, we donot need to set the mipmodel seperately if the variables have a model.
-        similarly here is the variables (or the constraints) have a mip model, we donot need to define a model.
-        If they don't we can define a mipmodel for the constraints and the variables.
-
+            okay so this is supposed to be similar to that of the variable.
+            if we want to set some parameter of the expression we do it here.
+            Also it would Set it's variables, and Constraints.
+            It would need to have the mipmodel defined already in order to set the constraints
+            (for constraints, we donot need to set the mipmodel seperately if the variables have a model.
+            similarly here is the variables (or the constraints) have a mip model, we donot need to define a model.
+            If they don't we can define a mipmodel for the constraints and the variables.
         """
         # so when we set the expression, the variable_pointers  are already updated, and and constraint_pointers are defined.
         # here we only need to SET them in the mipmodel. This means update the objective coefficients for variables and attach the constraints.
@@ -232,7 +219,6 @@ class MipExpression:
         def check_variable_attached_to_expression_mipmodel(variable_pointer, mipmodel):
 
             if hasattr(variable_pointer, "variable_list"):
-
                 if mipmodel != variable_pointer.mipmodel:
                     ValueError(
                         "The expression MipModel is not the same as the given MipModel"
@@ -241,60 +227,56 @@ class MipExpression:
                 for variable in variable_pointer.variable_list:
                     check_variable_attached_to_expression_mipmodel(variable, mipmodel)
 
-            elif hasattr(variable_pointer, "attach_mipmodel"):
+            if variable_pointer.mipmodel != mipmodel:
+                ValueError(
+                    "The variable pointer MipModel is not the same as the constraint MipModel"
+                )
 
-                if not variable_pointer.mipmodel:
-                    variable_pointer.attach_mipmodel(mipmodel)
+            ## i.e. not parameters
+            if hasattr(variable_pointer, "mipmodel_attached"):
+                if not variable_pointer.mipmodel_attached:
+                    variable_pointer.build()
 
-                elif variable_pointer.mipmodel != mipmodel:
-                    ValueError(
-                        "The variable pointer MipModel is not the same as the constraint MipModel"
-                    )
+                # if not variable_pointer.mipmodel:
+                #     variable_pointer.attach_mipmodel(mipmodel)
+                # elif variable_pointer.mipmodel == mipmodel:
+                #     ## i.e the variable is already set and is attached to the mipmodel
+                #     variable_pointer.reattach_mipmodel()
 
-                elif variable_pointer.mipmodel == mipmodel:
-                    ## i.e the variable is already set and is attached to the mipmodel
-
-                    variable_pointer.reattach_mipmodel()
+            return
 
         if not self.mipmodel:
             self._add_mipmodel_from_variables()
 
         for variable_pointer in self.variable_list:
-
             check_variable_attached_to_expression_mipmodel(
                 variable_pointer, self.mipmodel
             )
 
         for constraint_pointer in self.constraint_pointers:
-            constraint_pointer.build_constraint()
+            constraint_pointer.build()
 
         self.mipmodel_attached = True
+        return
 
-        # what else needs to happen when we want to Build the actual expression?
-        # similar to variablepointer and constraint_pointer,  need to add for the case we want to change the parameters of the expression
-
-    ## still need to think about the case when we add a Mipmodel to another model, what will/should happen to it's variable_pointers of the old/new mipmodels
 
     def _add_mipmodel_from_variables(self):
 
         """
-        so here the assumption is that we have not specified the mipmodel for the
-        expression explicitly, but we have variables that are attached to some mipmodel.
-        Q; whatif the variables or the expression does not have a mipmodel?
-
-
+            so here the assumption is that we have not specified the mipmodel for the
+            expression explicitly, but we have variables that are attached to some mipmodel.
+            Q; whatif the variables or the expression does not have a mipmodel?
         """
 
         mipmodel_list = [variable.mipmodel for variable in self.variable_list]
         mipmodel = next(item for item in mipmodel_list if item is not None)
         assert mipmodel != None
-        self.add_mipmodel(mipmodel)
-
-        return mipmodel
-
-    def add_mipmodel(self, mipmodel):
-
         self.mipmodel = mipmodel
+        return 
+
+    
+
+
 
 
 class MipExpressionArray:
