@@ -2,21 +2,13 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import List
 
-
-from dataclasses import dataclass
-
-# @dataclass
 class Catalogue:
     catalogue_items_dict = dict()
 
     def __new__(cls, component, hierarchy_name,  *args, **kwargs):
-        # component_item = cls.components_dict.get(component_id)
+
         hierarchy_catalogue = cls.catalogue_items_dict.get(hierarchy_name)
 
-        # if not component_item:
-        #     component_item = super().__new__(cls)
-        #     cls.components_dict[component_id] = component_item
-        # return component_item
         if not hierarchy_catalogue:
             hierarchy_catalogue = dict()
             cls.catalogue_items_dict[hierarchy_name] = hierarchy_catalogue
@@ -47,13 +39,11 @@ class Catalogue:
         # return cls.components_dict
         return cls.catalogue_items_dict[hierarchy_name]
 
-
     @classmethod
     def get_component(cls, hierarchy_name, component_id):
 
         # return cls.components_dict[component_id]
         return cls.catalogue_items_dict[hierarchy_name][component_id]
-
 
     @staticmethod
     def add_component_to_catalogue(component, hierarchy_name):
@@ -77,10 +67,9 @@ class Catalogue:
 
             return {}
 
-
     @classmethod
-    def purge(cls, hierarchy_name):
+    def purge(cls, hierarchy):
 
-        # cls.components_dict = dict()
-        cls.catalogue_items_dict[hierarchy_name] = dict()
+        hierarchy_name = hierarchy._hierarchy.hierarchy_name
+        _ = cls.catalogue_items_dict.pop(hierarchy_name)
         return
