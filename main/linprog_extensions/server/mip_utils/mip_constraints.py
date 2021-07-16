@@ -89,18 +89,20 @@ class MipConstraintPointer:
             ]
             mipmodel = next(item for item in mipmodel_list if item is not None)
             assert mipmodel != None
-            self.add_mipmodel(mipmodel)
+            self.mipmodel = mipmodel
 
         if not self.variables:
             ValueError("The constraint does not have any variables")
 
         for variable in self.variables:
             if isinstance(variable, MipVariablePointer):
-                if not (variable.mipmodel == self.mipmodel):
+                if (variable.mipmodel) and (not (variable.mipmodel == self.mipmodel)):
                     ValueError(
                         "The variable pointer MipModel is not the same as the constraint MipModel"
                     )
                 elif not variable.mipmodel_attached:
+                    if not variable.mipmodel:
+                        variable.mipmodel = self.mipmodel
                     variable.build()
                 
                 var_index_list.append(variable.mipmodel_var_index)

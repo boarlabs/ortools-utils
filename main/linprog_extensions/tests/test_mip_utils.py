@@ -6,6 +6,7 @@ from server.mip_utils import(
     MipVariablePointer,
     MipModel,
     MipConstraintPointer,
+    MipExpression,
 )
 
 
@@ -67,8 +68,6 @@ def test_mip_variable_pointer():
     ## NOTE: A New Variable is added here to the model
     assert(mipmodel1.model.variable[2].objective_coefficient == 12)
 
-    print("test_mip_variable_pointer finish")
-
     return
 
 
@@ -83,13 +82,94 @@ def test_mip_constraint():
 
     constr1 = MipConstraintPointer(
         variables=[var1, var2],
+        coefficient =[1,2],
         name="test_constraint1",
+        upper_bound= 4
     )
 
+    mipmodel1 = MipModel()
 
+    var1.mipmodel = mipmodel1
+    # var2.mipmodel = mipmodel1
+    constr1.build()
+
+    assert(constr1.mipconstraint.var_index[0] == 0)
+    assert(constr1.mipconstraint.coefficient[0] ==1)
+    assert(mipmodel1.model.variable[0].name == "test_var1")
+
+
+      
+    var3= MipVariablePointer(
+        name="test_var3",
+    )
+    var4= MipVariablePointer(
+        name = "test_var4"
+    )
+
+    constr1 = MipConstraintPointer(
+        variables=[var3, var4],
+        coefficient =[3,4],
+        name="test_constraint2",
+        upper_bound= 4
+    )
+
+    mipmodel1 = MipModel()
+
+    constr1.mipmodel = mipmodel1
+    constr1.build()
+
+    assert(constr1.mipconstraint.var_index[0] == 0)
+    assert(constr1.mipconstraint.coefficient[0] ==3)
+    assert(mipmodel1.model.variable[0].name == "test_var3")
+
+    return
+
+
+def test_mip_expression():
+
+    var1 = MipVariablePointer(
+        name = "test_var1"
+    )
+
+    var2 = MipVariablePointer(
+        name="test_var2"
+    )
+
+    param1 = MipParameterPointer(34)
+
+    exp1 = MipExpression(
+        name = "test_expr",
+        variable_list=[var1, var2, param1],
+        coefficients = [1,2, 3],
+        lower_bound= 0 
+    )
+
+    mipmodel1 = MipModel()
+    exp1.mipmodel = mipmodel1
+
+    # unlike constraint, here we cannot just asssign a mipmodel to expr, and it'll
+    ## figure out for the vars, maybe add it later
+    var1.mipmodel = mipmodel1
+    var2.mipmodel = mipmodel1
+
+    exp1.build()
+
+
+    assert(mipmodel1.model.constraint[0].var_index[0]==0)
+    assert(len(mipmodel1.model.variable)==2)
+    assert(mipmodel1.model.variable[1].name=="test_var2")
+    assert(mipmodel1.model.constraint[0].lower_bound == -102)
+
+    ### okay so still remains testing of expressions with expressions
+
+    return
 
 
 if __name__ == "__main__":
     test_parameter_pointer()
 
     test_mip_variable_pointer()
+
+    test_mip_constraint()
+
+    test_mip_expression()

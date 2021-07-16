@@ -55,13 +55,13 @@ class MipExpression:
         self.mipmodel_attached = False
 
         # we will have up to two constraints for the lower bound and upper bound limits
-        if lower_bound:
+        if lower_bound is not None:
             self.add_constraint_pointer(lower_bound=lower_bound)
 
-        if upper_bound:
+        if upper_bound is not None:
             self.add_constraint_pointer(upper_bound=upper_bound)
 
-        if objective_coefficient.value:
+        if objective_coefficient.value is not None:
             self.add_objective_coefficient(self, objective_coefficient, 1)
 
         return
@@ -73,6 +73,10 @@ class MipExpression:
     @mipmodel.setter
     def mipmodel(self, mipmodel):
         self._mipmodel = mipmodel
+        for constriant in self.constraint_pointers:
+            # we should have not needed to set this mipmodel for constraint
+            # given that the variable has mipmodel upon building constr
+            constriant.mipmodel = mipmodel
     
     def list_variable_coefficients(self):
 
@@ -124,10 +128,10 @@ class MipExpression:
 
             if isinstance(expression_term, MipParameterPointer):
 
-                if updated_lb:
+                if updated_lb is not None:
                     updated_lb += -coefficient * expression_term.value
 
-                if updated_ub:
+                if updated_ub is not None:
                     updated_ub += -coefficient * expression_term.value
 
         return updated_lb, updated_ub
@@ -228,9 +232,10 @@ class MipExpression:
                     "The variable pointer MipModel is not the same as the constraint MipModel"
                 )
 
-            # elif hasattr(variable_pointer, "attach_mipmodel"):
-            if not variable_pointer.mipmodel_attached:
-                variable_pointer.build()
+            ## i.e. not parameters
+            if hasattr(variable_pointer, "mipmodel_attached"):
+                if not variable_pointer.mipmodel_attached:
+                    variable_pointer.build()
 
                 # if not variable_pointer.mipmodel:
                 #     variable_pointer.attach_mipmodel(mipmodel)
