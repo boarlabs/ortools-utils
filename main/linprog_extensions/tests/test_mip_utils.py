@@ -130,23 +130,18 @@ def test_mip_expression():
     var1 = MipVariablePointer(
         name = "test_var1"
     )
-
     var2 = MipVariablePointer(
         name="test_var2"
     )
-
     param1 = MipParameterPointer(34)
-
     exp1 = MipExpression(
-        name = "test_expr",
+        name = "test_expr1",
         variable_list=[var1, var2, param1],
         coefficients = [1,2, 3],
         lower_bound= 0 
     )
-
     mipmodel1 = MipModel()
     exp1.mipmodel = mipmodel1
-
     # unlike constraint, here we cannot just asssign a mipmodel to expr, and it'll
     ## figure out for the vars, maybe add it later
     var1.mipmodel = mipmodel1
@@ -154,13 +149,46 @@ def test_mip_expression():
 
     exp1.build()
 
-
     assert(mipmodel1.model.constraint[0].var_index[0]==0)
     assert(len(mipmodel1.model.variable)==2)
     assert(mipmodel1.model.variable[1].name=="test_var2")
     assert(mipmodel1.model.constraint[0].lower_bound == -102)
 
     ### okay so still remains testing of expressions with expressions
+
+    var3 = MipVariablePointer(
+        name = "test_var3"
+    )
+    var4 = MipVariablePointer(
+        name="test_var4"
+    )
+    var5= MipVariablePointer(
+        name="test_var5"
+    )
+    param2 = MipParameterPointer(34)
+    param3 = MipParameterPointer(3)
+
+    exp2 = MipExpression(
+        name = "test_expr2",
+        variable_list=[var3, var4, param2],
+        coefficients = [1,2, 3],
+        lower_bound= 0 
+    )
+    mipmodel2 = MipModel()
+    exp2.mipmodel = mipmodel2
+    var3.mipmodel = mipmodel2
+    var4.mipmodel = mipmodel2
+    var5.mipmodel = mipmodel2
+    exp3 = MipExpression(
+        name = "test_expr3",
+        variable_list=[exp2, var5, param3],
+        coefficients = [1,2, 1],
+        lower_bound= 0 
+    )
+    exp3.mipmodel = mipmodel2
+    exp3.build()
+
+    assert(mipmodel2.model.constraint[1].lower_bound == -105)
 
     return
 
