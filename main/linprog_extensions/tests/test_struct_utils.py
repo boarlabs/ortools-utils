@@ -5,7 +5,6 @@ from typing import List, Any
 from context import operations_research
 # import  server
 
-
 from server.struct_utils import Component, Container, Content
 
 def from_float(x: Any) -> float:
