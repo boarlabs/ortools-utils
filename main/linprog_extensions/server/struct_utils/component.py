@@ -17,7 +17,8 @@ class Component(ABC):
         super().__post_init__()
         self._parent_component_ = None
         self._uid = uuid.uuid4()
-
+        self._tags = self.add_tags()
+        return
 
     @property
     def _parent_component(self) -> Component:
@@ -27,8 +28,8 @@ class Component(ABC):
     @_parent_component.setter
     def _parent_component(self, parent_component: Component):
         self._parent_component_ = parent_component
+        return
 
-    
     @property
     def _children(self) -> List[Component]:
         pass
@@ -120,3 +121,9 @@ class Component(ABC):
         hierarchy.register_component(self)
         for componenet in self._children:
             componenet.add_hierarchy(hierarchy)
+
+        return
+
+
+    def add_tags(self):
+        raise(NotImplementedError)
