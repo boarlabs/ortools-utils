@@ -21,8 +21,6 @@ def test_adding_tags():
     model_requests = instantiate_model()
     request_stream_struct = ReferenceMPModelRequestStreem.from_proto(model_requests)
 
-    
-
 
     return
 

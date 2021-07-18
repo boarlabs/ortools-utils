@@ -18,7 +18,6 @@ class Hierarchy:
         return
 
     def register_component(self, component):
-
         Catalogue.add_component_to_catalogue(component, self.hierarchy_name)
         return
 
@@ -34,7 +33,11 @@ class HierarchyMixin:
         return
 
     def populate_hierarchy(self):
-    
         for componenet in self._children:
             componenet.add_hierarchy(self._hierarchy)
+        return
+
+    def collect_tags(self):
+        for componenet in self._children:
+            componenet.collect_tags()
         return

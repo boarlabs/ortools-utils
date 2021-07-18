@@ -8,7 +8,10 @@ from datetime import datetime
 
 from .catalogue import Catalogue
 
-
+@dataclass
+class SimpleBase:
+    def __post_init__(self):
+        return
 
 @dataclass
 class Component(ABC):
@@ -17,7 +20,7 @@ class Component(ABC):
         super().__post_init__()
         self._parent_component_ = None
         self._uid = uuid.uuid4()
-        self._tags = list() # self.add_tags()
+        self._tags_ = list() # self.add_tags()
         return
 
     @property
@@ -34,6 +37,14 @@ class Component(ABC):
     def _children(self) -> List[Component]:
         pass
 
+    @property
+    def _tags(self):
+        return self._tags_
+    
+    @_tags.setter
+    def _tags(self,tag_list):
+        self._tags_ = tag_list
+        return
 
     # def add(self, component: Component) -> None:
     #     pass
@@ -127,4 +138,10 @@ class Component(ABC):
 
     def add_tags(self):
         # raise(NotImplementedError)
+        return
+    
+    def collect_tags(self):
+        self.add_tags()
+        for componenet in self._children:
+            componenet.collect_tags()
         return
