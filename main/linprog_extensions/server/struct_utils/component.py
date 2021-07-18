@@ -17,7 +17,7 @@ class Component(ABC):
         super().__post_init__()
         self._parent_component_ = None
         self._uid = uuid.uuid4()
-        self._tags = self.add_tags()
+        self._tags = list() # self.add_tags()
         return
 
     @property
@@ -126,4 +126,5 @@ class Component(ABC):
 
 
     def add_tags(self):
-        raise(NotImplementedError)
+        # raise(NotImplementedError)
+        return

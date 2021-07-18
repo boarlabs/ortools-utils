@@ -41,6 +41,7 @@ class MPArrayWithConstantConstraintExt(Content, MPArrayWithConstantConstraint):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
         return
 
     @staticmethod
@@ -55,9 +56,6 @@ class MPArrayWithConstantConstraintExt(Content, MPArrayWithConstantConstraint):
             resultant_var_index,
         )
     
-    def add_tags(self):
-        return list()
-
 
 @dataclass
 class MPArrayConstraintExt(Content, MPArrayConstraint):
@@ -65,6 +63,7 @@ class MPArrayConstraintExt(Content, MPArrayConstraint):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
         return
 
     @staticmethod
@@ -76,9 +75,7 @@ class MPArrayConstraintExt(Content, MPArrayConstraint):
             var_index,
             resultant_var_index,
         )
-    
-    def add_tags(self):
-        return list()
+
 
 @dataclass
 class MPAbsConstraintExt(Content, MPAbsConstraint):
@@ -86,6 +83,7 @@ class MPAbsConstraintExt(Content, MPAbsConstraint):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
         return
 
     @staticmethod
@@ -97,9 +95,6 @@ class MPAbsConstraintExt(Content, MPAbsConstraint):
             var_index,
             resultant_var_index,
         )
-    
-    def add_tags(self):
-        return list()
 
 
 @dataclass
@@ -108,6 +103,7 @@ class MPQuadraticConstraintExt(Content, MPQuadraticConstraint):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
         return
 
     @staticmethod
@@ -130,9 +126,6 @@ class MPQuadraticConstraintExt(Content, MPQuadraticConstraint):
             lower_bound,
             upper_bound,
         )
-    
-    def add_tags(self):
-        return list()
 
 
 @dataclass
@@ -200,6 +193,7 @@ class MPIndicatorConstraintExt(Content, MPIndicatorConstraint):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
         return
 
     @staticmethod
@@ -214,8 +208,6 @@ class MPIndicatorConstraintExt(Content, MPIndicatorConstraint):
             constraint,
         )
 
-    def add_tags(self):
-        return list()
 
 @dataclass
 class MPVariableProtoExt(Content, MPVariableProto):
@@ -223,6 +215,7 @@ class MPVariableProtoExt(Content, MPVariableProto):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
         return
 
 
@@ -257,6 +250,8 @@ class MPGeneralConstraintProtoExt(Container, MPGeneralConstraintProto):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
+        return
 
 
     @staticmethod
@@ -290,6 +285,8 @@ class MPQuadraticObjectiveExt(Content, MPQuadraticObjective):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
+        return
 
 
     @staticmethod
@@ -311,6 +308,7 @@ class PartialVariableAssignmentExt(Content, PartialVariableAssignment):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
         return
 
     @staticmethod
@@ -323,9 +321,6 @@ class PartialVariableAssignmentExt(Content, PartialVariableAssignment):
             var_value,
         )
 
-    def add_tags(self):
-        return list()
-
 
 @dataclass
 class ReferenceMPVariableExt(Content, ReferenceMPVariable):
@@ -333,6 +328,7 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
         return
 
     @staticmethod
@@ -366,6 +362,7 @@ class MPExpressionExt(Container, MPExpression):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
         return
 
     @staticmethod
@@ -403,6 +400,7 @@ class ReferenceMPConstraintExt(Container, ReferenceMPConstraint):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
         return
 
     @staticmethod
@@ -448,8 +446,8 @@ class MPModelProtoExt(Container, MPModelProto):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
         return
-
 
     @staticmethod
     def from_proto(obj:Any):
@@ -485,6 +483,7 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
         return
 
     @staticmethod
@@ -526,6 +525,7 @@ class ExpressionMPModelExt(Container, ExpressionMPModel):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
         return
 
     @staticmethod
@@ -567,6 +567,7 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
         return
 
     @staticmethod
@@ -580,9 +581,6 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
             reference_model,
             expression_model,
         )
-    
-    def add_tags(self):
-        return list()
 
 
 @dataclass
@@ -591,6 +589,7 @@ class ReferenceMPModelRequestExt(Container, ReferenceMPModelRequest):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
         return
 
     @staticmethod
@@ -600,10 +599,6 @@ class ReferenceMPModelRequestExt(Container, ReferenceMPModelRequest):
         return ReferenceMPModelRequestExt(
             model
         )
-    
-    def add_tags(self):
-        return list()
-
 
 
 @dataclass
@@ -614,6 +609,7 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.add_tags()
         self.populate_hierarchy()
         return
 
@@ -624,6 +620,3 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container):
         return ReferenceMPModelRequestStreem(
             model_requests
         )
-
-    def add_tags(self):
-        return list()

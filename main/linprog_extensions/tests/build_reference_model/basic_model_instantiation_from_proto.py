@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from ..context import operations_research
+# from ..context import operations_research
 from operations_research.linear_extension_pb2 import(
     ReferenceMPModel,
     ExtendedMPModel,

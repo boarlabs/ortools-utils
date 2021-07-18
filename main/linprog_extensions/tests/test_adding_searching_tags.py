@@ -9,6 +9,7 @@ from server.linprog_structs.operation_research_ext import(
     ExtendedMPModelExt,
     MPModelProtoExt,
     ReferenceMPModelExt,
+    ReferenceMPModelRequestStreem,
 )
 
 
@@ -18,8 +19,14 @@ def test_adding_tags():
 
 
     model_requests = instantiate_model()
+    request_stream_struct = ReferenceMPModelRequestStreem.from_proto(model_requests)
 
     
+
+
+    return
+
+
 
 
 
@@ -32,3 +39,5 @@ def test_adding_tags():
 
 
 if __name__ == "__main__":
+    
+    test_adding_tags()
