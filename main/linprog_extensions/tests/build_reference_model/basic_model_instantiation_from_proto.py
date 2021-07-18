@@ -1,14 +1,14 @@
 import numpy as np
 import pandas as pd
 
-# from flat_block_classes_pyoenviron import Model, Collection, Generator, Load, Solver
-from linear_extension_pb2 import(
+from ..context import operations_research
+from operations_research.linear_extension_pb2 import(
     ReferenceMPModel,
     ExtendedMPModel,
     ReferenceMPModelRequest,
 )
 
-from basic_model_defenition_from_proto import(
+from .basic_model_defenition_from_proto import(
     Generator,
     Load,
     Collection,
@@ -16,7 +16,7 @@ from basic_model_defenition_from_proto import(
 
 def instantiate_model():
 
-    data_directory_path = "./sample_data"
+    data_directory_path = "./data"
     data_file_name = "asset_data.xlsx"
 
     # Generator names in excel file are non-unique

@@ -1,10 +1,12 @@
-from linear_solver_pb2 import(
+from ..context import operations_research
+
+from operations_research.linear_solver_pb2 import(
     MPModelProto,
     MPVariableProto,
     MPConstraintProto
 )
 
-from linear_extension_pb2 import(
+from operations_research.linear_extension_pb2 import(
     ExpressionMPModel,
     ReferenceMPVariable,
     MPExpression,
@@ -43,7 +45,6 @@ class Load:
 
         # [self.mipmodel.variable.add(var) for var in self.net_export]
         self.mipmodel.variable.extend(self.net_export)
-
 
 
 class Generator:
@@ -199,9 +200,6 @@ class Generator:
 
         self.objective_terms["marginal_cost"] = self.total_cost
         
-
-
-
 
 class Collection:
     def __init__(
