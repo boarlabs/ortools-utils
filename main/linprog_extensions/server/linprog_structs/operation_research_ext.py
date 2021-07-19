@@ -2,7 +2,13 @@ from __future__ import annotations
 from typing import List, Any, TypeVar, Callable, Type, cast, Optional
 from enum import Enum
 from dataclasses import dataclass
-from ..struct_utils import Container, Content, HierarchyMixin
+
+from ..struct_utils import(
+    Container,
+    Content,
+    HierarchyMixin,
+    SimpleBase,
+) 
 
 from .operations_research import(
     ReferenceMPModelRequest,
@@ -35,16 +41,13 @@ def from_list(f: Callable[[Any], T], x: Any) -> List[T]:
     return [f(y) for y in x]
 
 
-
-
-
 @dataclass
 class MPArrayWithConstantConstraintExt(Content, MPArrayWithConstantConstraint):
 
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
-
+        return
 
     @staticmethod
     def from_proto(obj:Any):
@@ -57,15 +60,15 @@ class MPArrayWithConstantConstraintExt(Content, MPArrayWithConstantConstraint):
             constant,
             resultant_var_index,
         )
+    
 
 @dataclass
 class MPArrayConstraintExt(Content, MPArrayConstraint):
 
-
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
-
+        return
 
     @staticmethod
     def from_proto(obj:Any):
@@ -77,13 +80,14 @@ class MPArrayConstraintExt(Content, MPArrayConstraint):
             resultant_var_index,
         )
 
+
 @dataclass
 class MPAbsConstraintExt(Content, MPAbsConstraint):
 
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
-
+        return
 
     @staticmethod
     def from_proto(obj:Any):
@@ -102,7 +106,7 @@ class MPQuadraticConstraintExt(Content, MPQuadraticConstraint):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
-
+        return
 
     @staticmethod
     def from_proto(obj:Any):
@@ -132,11 +136,10 @@ class MPSosConstraintExt(Content, MPSosConstraint):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
-
+        return
 
     @staticmethod
     def from_proto(obj:Any):
-        
         type = obj.type
         # : "MPSosConstraintType" = betterproto.enum_field(1)
         var_index = obj.var_index
@@ -156,7 +159,7 @@ class MPConstraintProtoExt(Content, MPConstraintProto):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
-
+        return
 
     @staticmethod
     def from_proto(obj:Any):
@@ -175,22 +178,35 @@ class MPConstraintProtoExt(Content, MPConstraintProto):
             name,
             is_lazy,
         )
+    
+    def add_tags(self):
+        self._tags = [
+            f"name={self.name}",
+            "type=MPConstraintProto",
+            f"parent={self._parent_component.name}"
+        ]
+        return
 
 
 @dataclass
 class MPIndicatorConstraintExt(Content, MPIndicatorConstraint):
 
-
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
-
+        return
 
     @staticmethod
     def from_proto(obj:Any):
         var_index = obj.var_index
         var_value = obj.var_value
         constraint =  MPConstraintProtoExt.from_proto(obj.constraint)
+
+        return MPIndicatorConstraintExt(
+            var_index,
+            var_value,
+            constraint,
+        )
 
 
 @dataclass
@@ -199,18 +215,16 @@ class MPVariableProtoExt(Content, MPVariableProto):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        return
 
 
     @staticmethod
-    def from_proto(obj:Any):
-        
+    def from_proto(obj:Any): 
         lower_bound = obj.lower_bound
         upper_bound = obj.upper_bound
         objective_coefficient = obj.objective_coefficient
         is_integer = obj.is_integer
         name = obj.name
-
-        print(type(obj.name))
         branching_priority = obj.branching_priority
 
         return MPVariableProtoExt(
@@ -222,13 +236,21 @@ class MPVariableProtoExt(Content, MPVariableProto):
             branching_priority,
         )
 
+    def add_tags(self):
+        self._tags = [
+            f"name={self.name}",
+            "type=MPVariableProto",
+            f"parent={self._parent_component.name}"
+        ]
+        return
+
 @dataclass
 class MPGeneralConstraintProtoExt(Container, MPGeneralConstraintProto):
 
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
-
+        return
 
     @staticmethod
     def from_proto(obj:Any):
@@ -261,6 +283,7 @@ class MPQuadraticObjectiveExt(Content, MPQuadraticObjective):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        return
 
 
     @staticmethod
@@ -282,7 +305,7 @@ class PartialVariableAssignmentExt(Content, PartialVariableAssignment):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
-
+        return
 
     @staticmethod
     def from_proto(obj:Any):
@@ -301,7 +324,7 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
-
+        return
 
     @staticmethod
     def from_proto(obj:Any):
@@ -319,6 +342,14 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
             reference_name,
             tags,
         )
+      
+    def add_tags(self):
+        self._tags = [
+            f"name={self.reference_name}",
+            "type=ReferenceMPVariable",
+            f"parent={self._parent_component.name}"
+        ]
+        return
 
 
 @dataclass
@@ -327,7 +358,7 @@ class MPExpressionExt(Container, MPExpression):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
-
+        return
 
     @staticmethod
     def from_proto(obj:Any):
@@ -350,6 +381,14 @@ class MPExpressionExt(Container, MPExpression):
             variable_coefficients,
             tags,
         )
+    
+    def add_tags(self):
+        self._tags = [
+            f"name={self.name}",
+            "type=MPExpression",
+        ]
+        return
+
 
 @dataclass
 class ReferenceMPConstraintExt(Container, ReferenceMPConstraint):
@@ -357,7 +396,7 @@ class ReferenceMPConstraintExt(Container, ReferenceMPConstraint):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
-
+        return
 
     @staticmethod
     def from_proto(obj:Any):
@@ -388,26 +427,22 @@ class ReferenceMPConstraintExt(Container, ReferenceMPConstraint):
             expression_names,
             expression_coefficients,
         ) 
+    
+    def add_tags(self):
+        self._tags = [
+            f"name={self.name}",
+            "type=ReferenceMPConstraint",
+        ]
+        return
 
 
 @dataclass
 class MPModelProtoExt(Container, MPModelProto):
 
-    # variable: List[MPVariableProtoExt]
-    # constraint: List[MPConstraintProtoExt]
-    # general_constraint: List[MPGeneralConstraintProtoExt]
-    # maximize: bool
-    # objective_offset: int
-    # quadratic_objective: MPQuadraticObjectiveExt
-    # name: str
-    # solution_hint: PartialVariableAssignmentExt
-
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
-
         return
-
 
     @staticmethod
     def from_proto(obj:Any):
@@ -430,6 +465,13 @@ class MPModelProtoExt(Container, MPModelProto):
             name,
             solution_hint,
         )
+    
+    def add_tags(self):
+        self._tags = [
+            f"name={self.name}",
+            "type=MPModelProto",
+        ]
+        return
 
 @dataclass
 class ReferenceMPModelExt(Container, ReferenceMPModel):
@@ -437,7 +479,7 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
-
+        return
 
     @staticmethod
     def from_proto(obj:Any):
@@ -464,6 +506,15 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
             model_dependencies,
             build_final,
         )
+    
+    def add_tags(self):
+        self._tags = [
+            f"name={self.name}",
+            "type=ReferenceMPModel",
+            f"model_dependencies={str(self.model_dependencies)}",
+        ]
+        return
+
 
 @dataclass
 class ExpressionMPModelExt(Container, ExpressionMPModel):
@@ -471,7 +522,7 @@ class ExpressionMPModelExt(Container, ExpressionMPModel):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
-
+        return
 
     @staticmethod
     def from_proto(obj:Any):
@@ -498,24 +549,27 @@ class ExpressionMPModelExt(Container, ExpressionMPModel):
             expressions,
             reference_constraints,
         )
-
+    
+    def add_tags(self):
+        self._tags = [
+            f"name={self.name}",
+            "type=ExpressionMPModel",
+        ]
+        return
 
 @dataclass
 class ExtendedMPModelExt(Container, ExtendedMPModel):
-    # concrete_model: MPModelProtoExt
-    # reference_model: ReferenceMPModelExt
-    # expression_model: ExpressionMPModelExt
 
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        return
 
     @staticmethod
     def from_proto(obj:Any):
         concrete_model = MPModelProtoExt.from_proto(obj.concrete_model)
         reference_model = ReferenceMPModelExt.from_proto(obj.reference_model)
         expression_model = ExpressionMPModelExt.from_proto(obj.expression_model)
-
 
         return ExtendedMPModelExt(
             concrete_model,
@@ -530,6 +584,7 @@ class ReferenceMPModelRequestExt(Container, ReferenceMPModelRequest):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        return
 
     @staticmethod
     def from_proto(obj:Any):
@@ -540,16 +595,17 @@ class ReferenceMPModelRequestExt(Container, ReferenceMPModelRequest):
         )
 
 
-
 @dataclass
-class ReferenceMPModelRequestStreem(HierarchyMixin, Container):
+class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
 
     model_requests: List[ReferenceMPModel]
 
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.collect_tags()
         self.populate_hierarchy()
+        return
 
     @staticmethod
     def from_proto(obj:Any):
