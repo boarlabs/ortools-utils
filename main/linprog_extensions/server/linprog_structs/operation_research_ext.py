@@ -473,6 +473,9 @@ class MPModelProtoExt(Container, MPModelProto):
         ]
         return
 
+    def build_model(self):
+        return
+
 @dataclass
 class ReferenceMPModelExt(Container, ReferenceMPModel):
 
@@ -556,6 +559,9 @@ class ExpressionMPModelExt(Container, ExpressionMPModel):
             "type=ExpressionMPModel",
         ]
         return
+    
+    def build_model(self):
+        return
 
 @dataclass
 class ExtendedMPModelExt(Container, ExtendedMPModel):
@@ -576,6 +582,19 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
             reference_model,
             expression_model,
         )
+    
+    def build_independent(self):
+
+        if self.reference_model:
+            return
+        
+        if self.concrete_model:
+            self.concrete_model.build_model()
+        
+        if self.expression_model:
+            self.expression_model.build_model()
+        return
+    
 
 
 @dataclass
@@ -598,7 +617,7 @@ class ReferenceMPModelRequestExt(Container, ReferenceMPModelRequest):
 @dataclass
 class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
 
-    model_requests: List[ReferenceMPModel]
+    model_requests: List[ReferenceMPModelRequestExt]
 
     def __post_init__(self):
         super().__post_init__()
@@ -614,3 +633,16 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
         return ReferenceMPModelRequestStreem(
             model_requests
         )
+    
+
+    def build_models(self):
+
+        ## so here is the goal to establish the logic for Order of Construction.
+        ## There is two notes to consider 
+        ## 1- all concrete models should be built before the reference Ones
+            ## What if we call the build_model concurently on all list ietms?
+            ## some of them will have to wait till the others are finished?
+
+        for model_request in self.model_requests:
+            model_request.model.build_independent()
+        return
