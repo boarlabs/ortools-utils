@@ -585,13 +585,13 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
     
     def build_independent(self):
 
-        if self.reference_model:
+        if not (self.reference_model == ReferenceMPModelExt()):
             return
         
-        if self.concrete_model:
+        if not (self.concrete_model == MPModelProtoExt()):
             self.concrete_model.build_model()
         
-        if self.expression_model:
+        if not(self.expression_model == ExpressionMPModelExt()) :
             self.expression_model.build_model()
         return
     
