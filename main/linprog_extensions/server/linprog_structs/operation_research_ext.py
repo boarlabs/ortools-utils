@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import List, Any, TypeVar, Callable, Type, cast, Optional
 from enum import Enum
-from dataclasses import dataclass
+from dataclasses import dataclass, MISSING, fields
 
 from ..struct_utils import(
     Container,
@@ -465,6 +465,12 @@ class MPModelProtoExt(Container, MPModelProto):
             name,
             solution_hint,
         )
+
+    def __bool__(self):
+        return bool(
+            self.variable
+        )
+
     
     def add_tags(self):
         self._tags = [
@@ -483,6 +489,12 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
         super().__post_init__()
         self.set_children()
         return
+    
+    def __bool__(self):
+        return bool(
+            self.variables or 
+            self.reference_variables
+        )
 
     @staticmethod
     def from_proto(obj:Any):
@@ -526,6 +538,11 @@ class ExpressionMPModelExt(Container, ExpressionMPModel):
         super().__post_init__()
         self.set_children()
         return
+    
+    def __bool__(self):
+        return bool(
+            self.variable
+        )
 
     @staticmethod
     def from_proto(obj:Any):
@@ -569,29 +586,30 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        # self.check_empty()
         return
 
     @staticmethod
     def from_proto(obj:Any):
-        concrete_model = MPModelProtoExt.from_proto(obj.concrete_model)
-        reference_model = ReferenceMPModelExt.from_proto(obj.reference_model)
-        expression_model = ExpressionMPModelExt.from_proto(obj.expression_model)
+        concrete_model = MPModelProtoExt.from_proto(obj.concrete_model) if obj.concrete_model.ByteSize() != 0 else MPModelProtoExt()
+        reference_model = ReferenceMPModelExt.from_proto(obj.reference_model) if obj.reference_model.ByteSize() != 0 else ReferenceMPModelExt()
+        expression_model = ExpressionMPModelExt.from_proto(obj.expression_model) if obj.expression_model.ByteSize() != 0 else ExpressionMPModelExt()
 
         return ExtendedMPModelExt(
-            concrete_model,
-            reference_model,
-            expression_model,
+           concrete_model,
+           reference_model,
+           expression_model
         )
     
     def build_independent(self):
 
-        if not (self.reference_model == ReferenceMPModelExt()):
+        if self.reference_model:
             return
         
-        if not (self.concrete_model == MPModelProtoExt()):
+        if self.concrete_model:
             self.concrete_model.build_model()
         
-        if not(self.expression_model == ExpressionMPModelExt()) :
+        if self.expression_model:
             self.expression_model.build_model()
         return
     
