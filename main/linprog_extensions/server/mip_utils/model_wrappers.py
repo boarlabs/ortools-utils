@@ -1,3 +1,6 @@
+from __future__ import annotations
+from typing import List, Any, TypeVar, Callable, Type, cast, Optional
+
 from operations_research import linear_solver_pb2
 
 from . import MipVariableArray
@@ -8,8 +11,14 @@ from . import MipVariableArray
 
 class MipModel:
     
-    def __init__(self):
+    def __init__(
+        self,
+        name: Optional[str] = '',
+        maximize: Optional[bool]= False,
+    ):
         
+        self.name = name
+        self.maximize= maximize
         # maybe later I can edit the init so that one could instantiate with vairables, etc., provided.
         self.varibale_pointers = list()
         self.parameters = list()

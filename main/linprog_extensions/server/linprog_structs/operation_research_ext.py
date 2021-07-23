@@ -1,7 +1,16 @@
 from __future__ import annotations
+from os import name
 from typing import List, Any, TypeVar, Callable, Type, cast, Optional
 from enum import Enum
 from dataclasses import dataclass, MISSING, fields
+
+from ..mip_utils import(
+    MipModel,
+    MipVariablePointer,
+    MipParameterPointer,
+    MipExpression,
+    MipConstraintPointer,
+)
 
 from ..struct_utils import(
     Container,
@@ -159,6 +168,7 @@ class MPConstraintProtoExt(Content, MPConstraintProto):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.mipconstraint = None
         return
 
     @staticmethod
@@ -186,6 +196,20 @@ class MPConstraintProtoExt(Content, MPConstraintProto):
             f"parent={self._parent_component.name}"
         ]
         return
+    
+    def configure_mipmodel(self):
+
+        self.mipconstraint = MipConstraintPointer(
+            name = self.name,
+            lower_bound=self.lower_bound,
+            upper_bound=self.upper_bound,
+            coefficient=self.coefficient,
+            variables = [ self._parent_component.variable[index].mipvariable for index in self.var_index]
+        ) 
+        ## the parent component of MPConstraint is MPmodel which has MPVariable objects, which have mipvars
+        return self.mipconstraint
+
+
 
 
 @dataclass
@@ -215,6 +239,7 @@ class MPVariableProtoExt(Content, MPVariableProto):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.mipvariable = None
         return
 
 
@@ -243,6 +268,18 @@ class MPVariableProtoExt(Content, MPVariableProto):
             f"parent={self._parent_component.name}"
         ]
         return
+    
+    def configure_mipmodel(self):
+
+        self.mipvariable = MipVariablePointer(
+            name= self.name,
+            is_integer= self.is_integer,
+            lower_bound=self.lower_bound,
+            upper_bound=self.upper_bound,
+            objective_coefficient=MipParameterPointer(self.objective_coefficient)
+        )
+
+        return self.mipvariable
 
 @dataclass
 class MPGeneralConstraintProtoExt(Container, MPGeneralConstraintProto):
@@ -442,6 +479,7 @@ class MPModelProtoExt(Container, MPModelProto):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.mipmodel = None
         return
 
     @staticmethod
@@ -479,7 +517,25 @@ class MPModelProtoExt(Container, MPModelProto):
         ]
         return
 
-    def build_model(self):
+    def configure_mipmodel(self):
+
+        ## there are a bunch of variables and constraints here,
+        ## we need to refer them to each,
+        self.mipmodel = MipModel(
+            name=self.name,
+            maximize=self.maximize,
+        )
+
+        for variable in self.variable:
+            self.mipmodel.add_variable(
+                variable.configure_mipmodel()
+            )
+        
+        for constraint in self.constraint:
+            self.mipmodel.add_constraint(
+                constraint.configure_mipmodel()
+            )
+
         return
 
 @dataclass
@@ -577,7 +633,7 @@ class ExpressionMPModelExt(Container, ExpressionMPModel):
         ]
         return
     
-    def build_model(self):
+    def configure_mipmodel(self):
         return
 
 @dataclass
@@ -601,16 +657,16 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
            expression_model
         )
     
-    def build_independent(self):
+    def configure_mip_independent(self):
 
         if self.reference_model:
             return
         
         if self.concrete_model:
-            self.concrete_model.build_model()
+            self.concrete_model.configure_mipmodel()
         
         if self.expression_model:
-            self.expression_model.build_model()
+            self.expression_model.configure_mipmodel()
         return
     
 
@@ -653,7 +709,7 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
         )
     
 
-    def build_models(self):
+    def configure_references(self):
 
         ## so here is the goal to establish the logic for Order of Construction.
         ## There is two notes to consider 
@@ -662,5 +718,5 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
             ## some of them will have to wait till the others are finished?
 
         for model_request in self.model_requests:
-            model_request.model.build_independent()
+            model_request.model.configure_mip_independent()
         return
