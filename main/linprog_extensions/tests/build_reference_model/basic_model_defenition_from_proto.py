@@ -229,10 +229,7 @@ class Collection:
         ## Setup
         self.id = params["name"]
         self.objective_terms = {}
-
         self.mipmodel.name = self.id
-
-
         self.interval_set = interval_set
 
         self.component_element_ids = params["component_element_names"] # resources or other collections

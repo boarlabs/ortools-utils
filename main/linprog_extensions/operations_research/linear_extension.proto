@@ -49,8 +49,7 @@ message MPExpression {
 
     repeated ReferenceMPVariable variables = 11 ;
     repeated string variables_names = 10 ;
-
-
+        // do we really need this vairables_names field? they do exist inside the variables already,no?
     repeated double variable_coefficients =12;
 
     repeated string tags = 15;

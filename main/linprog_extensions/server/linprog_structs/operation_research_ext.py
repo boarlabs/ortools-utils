@@ -1,4 +1,5 @@
 from __future__ import annotations
+from main.linprog_extensions.server.struct_utils.catalogue import Catalogue
 from os import name
 from typing import List, Any, TypeVar, Callable, Type, cast, Optional
 from enum import Enum
@@ -395,6 +396,7 @@ class MPExpressionExt(Container, MPExpression):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.mipexpression = None
         return
 
     @staticmethod
@@ -425,6 +427,27 @@ class MPExpressionExt(Container, MPExpression):
             "type=MPExpression",
         ]
         return
+    
+    def configure_mipmodel(self):
+
+        self.mipexpression = MipExpression(
+            name=self.name,
+            lower_bound=self.lower_bound,
+            upper_bound=self.upper_bound,
+            objective_coefficient=MipParameterPointer(self.objective_coefficient),
+            coefficients=self.variable_coefficients,
+            variable_list= [
+                Catalogue.find_components(
+                    tag_list=[
+                        f"name={variable.var_name}",
+                        "type=MPVariableProto",
+                        f"parent={self._parent_component.name}",
+                    ]
+                ).mipvariable for variable in self.variables
+            ],
+        )
+
+        return self.mipexpression
 
 
 @dataclass
@@ -470,6 +493,10 @@ class ReferenceMPConstraintExt(Container, ReferenceMPConstraint):
             f"name={self.name}",
             "type=ReferenceMPConstraint",
         ]
+        return
+    
+
+    def configure_mipmodel(self):
         return
 
 
@@ -593,6 +620,7 @@ class ExpressionMPModelExt(Container, ExpressionMPModel):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.mipmodel = None
         return
     
     def __bool__(self):
@@ -634,6 +662,31 @@ class ExpressionMPModelExt(Container, ExpressionMPModel):
         return
     
     def configure_mipmodel(self):
+
+        self.mipmodel = MipModel(
+            name=self.name,
+            maximize=self.maximize,
+        )
+
+        for variable in self.variable:
+            self.mipmodel.add_variable(
+                variable.configure_mipmodel()
+            )
+        
+        for constraint in self.constraint:
+            self.mipmodel.add_constraint(
+                constraint.configure_mipmodel()
+            )
+
+        for expression in self.expressions:
+            self.mipmodel.add_expression(
+                expression.configure_mopmodel()
+            )
+        for reference_constraint in self.reference_constraints:
+            self.mipmodel.add_constraint(
+                reference_constraint.configure_mipmodel()
+            )
+
         return
 
 @dataclass
@@ -642,7 +695,6 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
-        # self.check_empty()
         return
 
     @staticmethod
@@ -669,7 +721,6 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
             self.expression_model.configure_mipmodel()
         return
     
-
 
 @dataclass
 class ReferenceMPModelRequestExt(Container, ReferenceMPModelRequest):
