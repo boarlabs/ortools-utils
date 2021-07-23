@@ -37,10 +37,8 @@ class SecondTestClass:
 def test_build_concrete_models():
 
     model_requests = instantiate_model()
-    
     request_stream_struct = ReferenceMPModelRequestStreem.from_proto(model_requests)
-
-    request_stream_struct.build_models()
+    request_stream_struct.configure_references()
 
     return
 
@@ -62,8 +60,8 @@ def test_reference_functions():
 
 if __name__ == "__main__":
 
-    # test_build_concrete_models() 
-    test_reference_functions()
+    test_build_concrete_models() 
+    # test_reference_functions()
 
    
 
