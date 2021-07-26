@@ -1,5 +1,5 @@
 from __future__ import annotations
-from main.linprog_extensions.server.struct_utils.catalogue import Catalogue
+from main.linprog_extensions.server.struct_utils import component
 from os import name
 from typing import List, Any, TypeVar, Callable, Type, cast, Optional
 from enum import Enum
@@ -18,6 +18,7 @@ from ..struct_utils import(
     Content,
     HierarchyMixin,
     SimpleBase,
+    Catalogue,
 ) 
 
 from .operations_research import(
@@ -266,7 +267,8 @@ class MPVariableProtoExt(Content, MPVariableProto):
         self._tags = [
             f"name={self.name}",
             "type=MPVariableProto",
-            f"parent={self._parent_component.name}"
+            f"parent={self._parent_component.name}",
+            f"model={self._parent_component.name}"
         ]
         return
     
@@ -362,6 +364,7 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.mipvariable = None
         return
 
     @staticmethod
@@ -382,12 +385,48 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
         )
       
     def add_tags(self):
+
+        if isinstance(self._parent_component, ReferenceMPModelExt):
+            model_name = self._parent_component.name 
+        elif isinstance(self._parent_component, MPExpressionExt):
+            model_name = self._parent_component._parent_component.name
+        else:
+            ValueError("the type of parent compoenet is not right!")
+
         self._tags = [
             f"name={self.reference_name}",
             "type=ReferenceMPVariable",
-            f"parent={self._parent_component.name}"
+            f"parent={self._parent_component.name}",
+            f"model={model_name}",
         ]
         return
+    
+
+    def configure_mipmodel(self):
+        ## the returned object  could be A MipVariablePointer or a MipExpression
+        ## the ReferenceVar itself could point to a concrete or reference var.
+
+        if self.model_name:
+            model_name = self.model_name
+        elif isinstance(self._parent_component, MPExpressionExt):
+            model_name = self._parent_component._parent_component.name
+        elif isinstance(self._parent_component, ReferenceMPModelExt):
+            model_name = self._parent_component.name
+        else:
+            ValueError( "ReferenceVariable parent component is not right!")
+
+        component =  Catalogue.find_components(
+            hierarchy_name = self._hierarchy.hierarchy_name,
+            tag_list=[
+                f"name={self.var_name}",
+                f"model={model_name}",
+            ]
+        )
+        assert(len(component) == 1)
+        if not component:
+            ValueError("component for the defined reference variable cannot be found")
+        
+        return component[0].mipvariable
 
 
 @dataclass
@@ -396,7 +435,7 @@ class MPExpressionExt(Container, MPExpression):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
-        self.mipexpression = None
+        self.mipvariable = None
         return
 
     @staticmethod
@@ -425,29 +464,24 @@ class MPExpressionExt(Container, MPExpression):
         self._tags = [
             f"name={self.name}",
             "type=MPExpression",
+            f"parent={self._parent_component.name}",
+            f"model={self._parent_component.name}",
         ]
         return
     
     def configure_mipmodel(self):
 
-        self.mipexpression = MipExpression(
+        self.mipvariable = MipExpression(
             name=self.name,
             lower_bound=self.lower_bound,
             upper_bound=self.upper_bound,
             objective_coefficient=MipParameterPointer(self.objective_coefficient),
             coefficients=self.variable_coefficients,
             variable_list= [
-                Catalogue.find_components(
-                    tag_list=[
-                        f"name={variable.var_name}",
-                        "type=MPVariableProto",
-                        f"parent={self._parent_component.name}",
-                    ]
-                ).mipvariable for variable in self.variables
+                ref_variable.configure_mipmodel() for ref_variable in self.variables
             ],
         )
-
-        return self.mipexpression
+        return self.mipvariable
 
 
 @dataclass
@@ -458,8 +492,11 @@ class ReferenceMPConstraintExt(Container, ReferenceMPConstraint):
         self.set_children()
         return
 
+    
     @staticmethod
     def from_proto(obj:Any):
+
+        # ToDo: checkout the situation with this RefConstraints and how it includes Concrete variables
         lower_bound = obj.lower_bound
         upper_bound = obj.upper_bound
         name = obj.name
@@ -536,7 +573,6 @@ class MPModelProtoExt(Container, MPModelProto):
             self.variable
         )
 
-    
     def add_tags(self):
         self._tags = [
             f"name={self.name}",
@@ -680,7 +716,7 @@ class ExpressionMPModelExt(Container, ExpressionMPModel):
 
         for expression in self.expressions:
             self.mipmodel.add_expression(
-                expression.configure_mopmodel()
+                expression.configure_mipmodel()
             )
         for reference_constraint in self.reference_constraints:
             self.mipmodel.add_constraint(
