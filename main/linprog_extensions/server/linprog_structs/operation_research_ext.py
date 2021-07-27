@@ -1,13 +1,24 @@
 from __future__ import annotations
+# from main.linprog_extensions.server.struct_utils import component
+from os import name
 from typing import List, Any, TypeVar, Callable, Type, cast, Optional
 from enum import Enum
-from dataclasses import dataclass
+from dataclasses import dataclass, MISSING, fields
+
+from ..mip_utils import(
+    MipModel,
+    MipVariablePointer,
+    MipParameterPointer,
+    MipExpression,
+    MipConstraintPointer,
+)
 
 from ..struct_utils import(
     Container,
     Content,
     HierarchyMixin,
     SimpleBase,
+    Catalogue,
 ) 
 
 from .operations_research import(
@@ -159,6 +170,7 @@ class MPConstraintProtoExt(Content, MPConstraintProto):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.mipconstraint = None
         return
 
     @staticmethod
@@ -186,6 +198,20 @@ class MPConstraintProtoExt(Content, MPConstraintProto):
             f"parent={self._parent_component.name}"
         ]
         return
+    
+    def configure_mipmodel(self):
+
+        self.mipconstraint = MipConstraintPointer(
+            name = self.name,
+            lower_bound=self.lower_bound,
+            upper_bound=self.upper_bound,
+            coefficient=self.coefficient,
+            variables = [ self._parent_component.variable[index].mipvariable for index in self.var_index]
+        ) 
+        ## the parent component of MPConstraint is MPmodel which has MPVariable objects, which have mipvars
+        return self.mipconstraint
+
+
 
 
 @dataclass
@@ -215,6 +241,7 @@ class MPVariableProtoExt(Content, MPVariableProto):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.mipvariable = None
         return
 
 
@@ -240,9 +267,22 @@ class MPVariableProtoExt(Content, MPVariableProto):
         self._tags = [
             f"name={self.name}",
             "type=MPVariableProto",
-            f"parent={self._parent_component.name}"
+            f"parent={self._parent_component.name}",
+            f"model={self._parent_component.name}"
         ]
         return
+    
+    def configure_mipmodel(self):
+
+        self.mipvariable = MipVariablePointer(
+            name= self.name,
+            is_integer= self.is_integer,
+            lower_bound=self.lower_bound,
+            upper_bound=self.upper_bound,
+            objective_coefficient=MipParameterPointer(self.objective_coefficient)
+        )
+
+        return self.mipvariable
 
 @dataclass
 class MPGeneralConstraintProtoExt(Container, MPGeneralConstraintProto):
@@ -324,6 +364,7 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.mipvariable = None
         return
 
     @staticmethod
@@ -344,12 +385,48 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
         )
       
     def add_tags(self):
+
+        if isinstance(self._parent_component, ReferenceMPModelExt):
+            model_name = self._parent_component.name 
+        elif isinstance(self._parent_component, MPExpressionExt):
+            model_name = self._parent_component._parent_component.name
+        else:
+            ValueError("the type of parent compoenet is not right!")
+
         self._tags = [
             f"name={self.reference_name}",
             "type=ReferenceMPVariable",
-            f"parent={self._parent_component.name}"
+            f"parent={self._parent_component.name}",
+            f"model={model_name}",
         ]
         return
+    
+
+    def configure_mipmodel(self):
+        ## the returned object  could be A MipVariablePointer or a MipExpression
+        ## the ReferenceVar itself could point to a concrete or reference var.
+
+        if self.model_name:
+            model_name = self.model_name
+        elif isinstance(self._parent_component, MPExpressionExt):
+            model_name = self._parent_component._parent_component.name
+        elif isinstance(self._parent_component, ReferenceMPModelExt):
+            model_name = self._parent_component.name
+        else:
+            ValueError( "ReferenceVariable parent component is not right!")
+
+        component =  Catalogue.find_components(
+            hierarchy_name = self._hierarchy.hierarchy_name,
+            tag_list=[
+                f"name={self.var_name}",
+                f"model={model_name}",
+            ]
+        )
+        assert(len(component) == 1)
+        if not component:
+            ValueError("component for the defined reference variable cannot be found")
+        
+        return component[0].mipvariable
 
 
 @dataclass
@@ -358,6 +435,7 @@ class MPExpressionExt(Container, MPExpression):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.mipvariable = None
         return
 
     @staticmethod
@@ -386,8 +464,24 @@ class MPExpressionExt(Container, MPExpression):
         self._tags = [
             f"name={self.name}",
             "type=MPExpression",
+            f"parent={self._parent_component.name}",
+            f"model={self._parent_component.name}",
         ]
         return
+    
+    def configure_mipmodel(self):
+
+        self.mipvariable = MipExpression(
+            name=self.name,
+            lower_bound=self.lower_bound,
+            upper_bound=self.upper_bound,
+            objective_coefficient=MipParameterPointer(self.objective_coefficient),
+            coefficients=self.variable_coefficients,
+            variable_list= [
+                ref_variable.configure_mipmodel() for ref_variable in self.variables
+            ],
+        )
+        return self.mipvariable
 
 
 @dataclass
@@ -398,8 +492,11 @@ class ReferenceMPConstraintExt(Container, ReferenceMPConstraint):
         self.set_children()
         return
 
+    
     @staticmethod
     def from_proto(obj:Any):
+
+        # ToDo: checkout the situation with this RefConstraints and how it includes Concrete variables
         lower_bound = obj.lower_bound
         upper_bound = obj.upper_bound
         name = obj.name
@@ -434,6 +531,10 @@ class ReferenceMPConstraintExt(Container, ReferenceMPConstraint):
             "type=ReferenceMPConstraint",
         ]
         return
+    
+
+    def configure_mipmodel(self):
+        return
 
 
 @dataclass
@@ -442,6 +543,7 @@ class MPModelProtoExt(Container, MPModelProto):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.mipmodel = None
         return
 
     @staticmethod
@@ -465,12 +567,38 @@ class MPModelProtoExt(Container, MPModelProto):
             name,
             solution_hint,
         )
-    
+
+    def __bool__(self):
+        return bool(
+            self.variable
+        )
+
     def add_tags(self):
         self._tags = [
             f"name={self.name}",
             "type=MPModelProto",
         ]
+        return
+
+    def configure_mipmodel(self):
+
+        ## there are a bunch of variables and constraints here,
+        ## we need to refer them to each,
+        self.mipmodel = MipModel(
+            name=self.name,
+            maximize=self.maximize,
+        )
+
+        for variable in self.variable:
+            self.mipmodel.add_variable(
+                variable.configure_mipmodel()
+            )
+        
+        for constraint in self.constraint:
+            self.mipmodel.add_constraint(
+                constraint.configure_mipmodel()
+            )
+
         return
 
 @dataclass
@@ -480,6 +608,12 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
         super().__post_init__()
         self.set_children()
         return
+    
+    def __bool__(self):
+        return bool(
+            self.variables or 
+            self.reference_variables
+        )
 
     @staticmethod
     def from_proto(obj:Any):
@@ -522,7 +656,13 @@ class ExpressionMPModelExt(Container, ExpressionMPModel):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.mipmodel = None
         return
+    
+    def __bool__(self):
+        return bool(
+            self.variable
+        )
 
     @staticmethod
     def from_proto(obj:Any):
@@ -556,6 +696,34 @@ class ExpressionMPModelExt(Container, ExpressionMPModel):
             "type=ExpressionMPModel",
         ]
         return
+    
+    def configure_mipmodel(self):
+
+        self.mipmodel = MipModel(
+            name=self.name,
+            maximize=self.maximize,
+        )
+
+        for variable in self.variable:
+            self.mipmodel.add_variable(
+                variable.configure_mipmodel()
+            )
+        
+        for constraint in self.constraint:
+            self.mipmodel.add_constraint(
+                constraint.configure_mipmodel()
+            )
+
+        for expression in self.expressions:
+            self.mipmodel.add_expression(
+                expression.configure_mipmodel()
+            )
+        for reference_constraint in self.reference_constraints:
+            self.mipmodel.add_constraint(
+                reference_constraint.configure_mipmodel()
+            )
+
+        return
 
 @dataclass
 class ExtendedMPModelExt(Container, ExtendedMPModel):
@@ -567,16 +735,28 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
 
     @staticmethod
     def from_proto(obj:Any):
-        concrete_model = MPModelProtoExt.from_proto(obj.concrete_model)
-        reference_model = ReferenceMPModelExt.from_proto(obj.reference_model)
-        expression_model = ExpressionMPModelExt.from_proto(obj.expression_model)
+        concrete_model = MPModelProtoExt.from_proto(obj.concrete_model) if obj.concrete_model.ByteSize() != 0 else MPModelProtoExt()
+        reference_model = ReferenceMPModelExt.from_proto(obj.reference_model) if obj.reference_model.ByteSize() != 0 else ReferenceMPModelExt()
+        expression_model = ExpressionMPModelExt.from_proto(obj.expression_model) if obj.expression_model.ByteSize() != 0 else ExpressionMPModelExt()
 
         return ExtendedMPModelExt(
-            concrete_model,
-            reference_model,
-            expression_model,
+           concrete_model,
+           reference_model,
+           expression_model
         )
+    
+    def configure_mip_independent(self):
 
+        if self.reference_model:
+            return
+        
+        if self.concrete_model:
+            self.concrete_model.configure_mipmodel()
+        
+        if self.expression_model:
+            self.expression_model.configure_mipmodel()
+        return
+    
 
 @dataclass
 class ReferenceMPModelRequestExt(Container, ReferenceMPModelRequest):
@@ -598,7 +778,7 @@ class ReferenceMPModelRequestExt(Container, ReferenceMPModelRequest):
 @dataclass
 class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
 
-    model_requests: List[ReferenceMPModel]
+    model_requests: List[ReferenceMPModelRequestExt]
 
     def __post_init__(self):
         super().__post_init__()
@@ -614,3 +794,16 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
         return ReferenceMPModelRequestStreem(
             model_requests
         )
+    
+
+    def configure_references(self):
+
+        ## so here is the goal to establish the logic for Order of Construction.
+        ## There is two notes to consider 
+        ## 1- all concrete models should be built before the reference Ones
+            ## What if we call the build_model concurently on all list ietms?
+            ## some of them will have to wait till the others are finished?
+
+        for model_request in self.model_requests:
+            model_request.model.configure_mip_independent()
+        return

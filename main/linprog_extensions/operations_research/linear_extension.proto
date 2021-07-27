@@ -13,7 +13,7 @@ message ReferenceMPVariable {
 
 // what else?
 // remember you want to build an actual variable from this
-// this could (or would) be the variable of another model?
+// this could be the variable of another model
 // what about variable grouping?
 // is this just an expression, 
 // does expression include grouping as well
@@ -49,8 +49,7 @@ message MPExpression {
 
     repeated ReferenceMPVariable variables = 11 ;
     repeated string variables_names = 10 ;
-
-
+        // do we really need this vairables_names field? they do exist inside the variables already,no?
     repeated double variable_coefficients =12;
 
     repeated string tags = 15;
@@ -124,6 +123,7 @@ message ReferenceMPConstraint {
 // then still i don't wish to define a constraint by model index, but maybe by name,
 // so we can probably go ahead and treat them like ref vars.
 // though brings the question then as why we would define such vars in the first place?!
+/// Update Should we really have variables and expressions here?
 
 message ReferenceMPModel {
 

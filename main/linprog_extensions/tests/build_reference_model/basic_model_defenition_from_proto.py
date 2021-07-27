@@ -1,5 +1,6 @@
 # from ..context import operations_research
 
+from os import name
 from operations_research.linear_solver_pb2 import(
     MPModelProto,
     MPVariableProto,
@@ -31,7 +32,7 @@ class Load:
         self.objective_terms = {}
 
         self.mipmodel.name = self.id
-
+        self.load_ramp = 100
 
         self.load =  params["load"]
 
@@ -43,8 +44,21 @@ class Load:
             ) for idx in interval_set
         ]
 
+        ## I need this to test the constraint creation on the server
+        self.load_ramp = [
+            MPConstraintProto(
+                name= f"load_ramp[{str(idx)}]",
+                coefficient = [1, -1],
+                var_index = [idx+1, idx],
+                lower_bound = self.load_ramp,
+                
+            ) for idx in range(len(interval_set)-1)
+        ]
+
         # [self.mipmodel.variable.add(var) for var in self.net_export]
         self.mipmodel.variable.extend(self.net_export)
+        self.mipmodel.constraint.extend(self.load_ramp)
+        return
 
 
 class Generator:
@@ -215,10 +229,7 @@ class Collection:
         ## Setup
         self.id = params["name"]
         self.objective_terms = {}
-
         self.mipmodel.name = self.id
-
-
         self.interval_set = interval_set
 
         self.component_element_ids = params["component_element_names"] # resources or other collections
