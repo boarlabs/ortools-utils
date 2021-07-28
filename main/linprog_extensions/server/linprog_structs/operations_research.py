@@ -565,6 +565,8 @@ class MPExpression(betterproto.Message):
     objective_coefficient: float = betterproto.double_field(8)
     variables: List["ReferenceMPVariable"] = betterproto.message_field(11)
     variables_names: List[str] = betterproto.string_field(10)
+    # do we really need this vairables_names field? they do exist inside the
+    # variables already,no?
     variable_coefficients: List[float] = betterproto.double_field(12)
     tags: List[str] = betterproto.string_field(15)
 
@@ -588,15 +590,8 @@ class ReferenceMPConstraint(betterproto.Message):
     lower_bound: float = betterproto.double_field(2)
     upper_bound: float = betterproto.double_field(3)
     name: str = betterproto.string_field(4)
-    ref_var_coefficients: List[float] = betterproto.double_field(7)
+    variable_coefficients: List[float] = betterproto.double_field(7)
     variable_references: List["ReferenceMPVariable"] = betterproto.message_field(8)
-    variable_reference_names: List[str] = betterproto.string_field(9)
-    variables: List["MPVariableProto"] = betterproto.message_field(15)
-    variable_names: List[str] = betterproto.string_field(16)
-    var_coefficients: List[float] = betterproto.double_field(17)
-    expressions: List["MPExpression"] = betterproto.message_field(20)
-    expression_names: List[str] = betterproto.string_field(21)
-    expression_coefficients: List[float] = betterproto.double_field(22)
 
 
 @dataclass
