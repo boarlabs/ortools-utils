@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto2',
   serialized_options=b'Z\'operations_research;operations_research',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n*operations_research/linear_extension.proto\x12\x13operations_research\x1a\'operations_research/linear_solver.proto\"v\n\x13ReferenceMPVariable\x12\x12\n\x08var_name\x18\x05 \x01(\t:\x00\x12\x12\n\nmodel_name\x18\x06 \x01(\t\x12\x11\n\tvar_index\x18\x07 \x01(\x05\x12\x16\n\x0ereference_name\x18\x08 \x01(\t\x12\x0c\n\x04tags\x18\x0b \x03(\t\"\xf6\x01\n\x0cMPExpression\x12\x0c\n\x04name\x18\x05 \x01(\t\x12\x19\n\x0blower_bound\x18\x06 \x01(\x01:\x04-inf\x12\x18\n\x0bupper_bound\x18\x07 \x01(\x01:\x03inf\x12 \n\x15objective_coefficient\x18\x08 \x01(\x01:\x01\x30\x12;\n\tvariables\x18\x0b \x03(\x0b\x32(.operations_research.ReferenceMPVariable\x12\x17\n\x0fvariables_names\x18\n \x03(\t\x12\x1d\n\x15variable_coefficients\x18\x0c \x03(\x01\x12\x0c\n\x04tags\x18\x0f \x03(\t\"\xaa\x04\n\x11\x45xpressionMPModel\x12\x36\n\x08variable\x18\x03 \x03(\x0b\x32$.operations_research.MPVariableProto\x12:\n\nconstraint\x18\x04 \x03(\x0b\x32&.operations_research.MPConstraintProto\x12I\n\x12general_constraint\x18\x07 \x03(\x0b\x32-.operations_research.MPGeneralConstraintProto\x12\x17\n\x08maximize\x18\x01 \x01(\x08:\x05\x66\x61lse\x12\x1b\n\x10objective_offset\x18\x02 \x01(\x01:\x01\x30\x12\x46\n\x13quadratic_objective\x18\x08 \x01(\x0b\x32).operations_research.MPQuadraticObjective\x12\x0e\n\x04name\x18\x05 \x01(\t:\x00\x12\x45\n\rsolution_hint\x18\x06 \x01(\x0b\x32..operations_research.PartialVariableAssignment\x12\x36\n\x0b\x65xpressions\x18\x0b \x03(\x0b\x32!.operations_research.MPExpression\x12I\n\x15reference_constraints\x18\x0c \x03(\x0b\x32*.operations_research.ReferenceMPConstraint\"\xc5\x03\n\x15ReferenceMPConstraint\x12\x19\n\x0blower_bound\x18\x02 \x01(\x01:\x04-inf\x12\x18\n\x0bupper_bound\x18\x03 \x01(\x01:\x03inf\x12\x0e\n\x04name\x18\x04 \x01(\t:\x00\x12 \n\x14ref_var_coefficients\x18\x07 \x03(\x01\x42\x02\x10\x01\x12\x45\n\x13variable_references\x18\x08 \x03(\x0b\x32(.operations_research.ReferenceMPVariable\x12 \n\x18variable_reference_names\x18\t \x03(\t\x12\x37\n\tvariables\x18\x0f \x03(\x0b\x32$.operations_research.MPVariableProto\x12\x16\n\x0evariable_names\x18\x10 \x03(\t\x12\x18\n\x10var_coefficients\x18\x11 \x03(\x01\x12\x36\n\x0b\x65xpressions\x18\x14 \x03(\x0b\x32!.operations_research.MPExpression\x12\x18\n\x10\x65xpression_names\x18\x15 \x03(\t\x12\x1f\n\x17\x65xpression_coefficients\x18\x16 \x03(\x01\"\xc1\x03\n\x10ReferenceMPModel\x12\x0e\n\x04name\x18\x05 \x01(\t:\x00\x12\x37\n\tvariables\x18\x03 \x03(\x0b\x32$.operations_research.MPVariableProto\x12;\n\x0b\x63onstraints\x18\x04 \x03(\x0b\x32&.operations_research.MPConstraintProto\x12\x17\n\x08maximize\x18\x01 \x01(\x08:\x05\x66\x61lse\x12\x45\n\x13reference_variables\x18\n \x03(\x0b\x32(.operations_research.ReferenceMPVariable\x12I\n\x15reference_constraints\x18\x0b \x03(\x0b\x32*.operations_research.ReferenceMPConstraint\x12\x36\n\x0b\x65xpressions\x18\x0f \x03(\x0b\x32!.operations_research.MPExpression\x12\x0c\n\x04tags\x18\x10 \x03(\t\x12\x1a\n\x12model_dependencies\x18\x11 \x03(\t\x12\x1a\n\x0b\x62uild_final\x18\x14 \x01(\x08:\x05\x66\x61lse\"\xce\x01\n\x0f\x45xtendedMPModel\x12\x39\n\x0e\x63oncrete_model\x18\x01 \x01(\x0b\x32!.operations_research.MPModelProto\x12>\n\x0freference_model\x18\x02 \x01(\x0b\x32%.operations_research.ReferenceMPModel\x12@\n\x10\x65xpression_model\x18\x03 \x01(\x0b\x32&.operations_research.ExpressionMPModel\"N\n\x17ReferenceMPModelRequest\x12\x33\n\x05model\x18\x01 \x01(\x0b\x32$.operations_research.ExtendedMPModelB)Z\'operations_research;operations_research'
+  serialized_pb=b'\n*operations_research/linear_extension.proto\x12\x13operations_research\x1a\'operations_research/linear_solver.proto\"v\n\x13ReferenceMPVariable\x12\x12\n\x08var_name\x18\x05 \x01(\t:\x00\x12\x12\n\nmodel_name\x18\x06 \x01(\t\x12\x11\n\tvar_index\x18\x07 \x01(\x05\x12\x16\n\x0ereference_name\x18\x08 \x01(\t\x12\x0c\n\x04tags\x18\x0b \x03(\t\"\xf6\x01\n\x0cMPExpression\x12\x0c\n\x04name\x18\x05 \x01(\t\x12\x19\n\x0blower_bound\x18\x06 \x01(\x01:\x04-inf\x12\x18\n\x0bupper_bound\x18\x07 \x01(\x01:\x03inf\x12 \n\x15objective_coefficient\x18\x08 \x01(\x01:\x01\x30\x12;\n\tvariables\x18\x0b \x03(\x0b\x32(.operations_research.ReferenceMPVariable\x12\x17\n\x0fvariables_names\x18\n \x03(\t\x12\x1d\n\x15variable_coefficients\x18\x0c \x03(\x01\x12\x0c\n\x04tags\x18\x0f \x03(\t\"\xaa\x04\n\x11\x45xpressionMPModel\x12\x36\n\x08variable\x18\x03 \x03(\x0b\x32$.operations_research.MPVariableProto\x12:\n\nconstraint\x18\x04 \x03(\x0b\x32&.operations_research.MPConstraintProto\x12I\n\x12general_constraint\x18\x07 \x03(\x0b\x32-.operations_research.MPGeneralConstraintProto\x12\x17\n\x08maximize\x18\x01 \x01(\x08:\x05\x66\x61lse\x12\x1b\n\x10objective_offset\x18\x02 \x01(\x01:\x01\x30\x12\x46\n\x13quadratic_objective\x18\x08 \x01(\x0b\x32).operations_research.MPQuadraticObjective\x12\x0e\n\x04name\x18\x05 \x01(\t:\x00\x12\x45\n\rsolution_hint\x18\x06 \x01(\x0b\x32..operations_research.PartialVariableAssignment\x12\x36\n\x0b\x65xpressions\x18\x0b \x03(\x0b\x32!.operations_research.MPExpression\x12I\n\x15reference_constraints\x18\x0c \x03(\x0b\x32*.operations_research.ReferenceMPConstraint\"\xc6\x01\n\x15ReferenceMPConstraint\x12\x19\n\x0blower_bound\x18\x02 \x01(\x01:\x04-inf\x12\x18\n\x0bupper_bound\x18\x03 \x01(\x01:\x03inf\x12\x0e\n\x04name\x18\x04 \x01(\t:\x00\x12!\n\x15variable_coefficients\x18\x07 \x03(\x01\x42\x02\x10\x01\x12\x45\n\x13variable_references\x18\x08 \x03(\x0b\x32(.operations_research.ReferenceMPVariable\"\xc1\x03\n\x10ReferenceMPModel\x12\x0e\n\x04name\x18\x05 \x01(\t:\x00\x12\x37\n\tvariables\x18\x03 \x03(\x0b\x32$.operations_research.MPVariableProto\x12;\n\x0b\x63onstraints\x18\x04 \x03(\x0b\x32&.operations_research.MPConstraintProto\x12\x17\n\x08maximize\x18\x01 \x01(\x08:\x05\x66\x61lse\x12\x45\n\x13reference_variables\x18\n \x03(\x0b\x32(.operations_research.ReferenceMPVariable\x12I\n\x15reference_constraints\x18\x0b \x03(\x0b\x32*.operations_research.ReferenceMPConstraint\x12\x36\n\x0b\x65xpressions\x18\x0f \x03(\x0b\x32!.operations_research.MPExpression\x12\x0c\n\x04tags\x18\x10 \x03(\t\x12\x1a\n\x12model_dependencies\x18\x11 \x03(\t\x12\x1a\n\x0b\x62uild_final\x18\x14 \x01(\x08:\x05\x66\x61lse\"\xce\x01\n\x0f\x45xtendedMPModel\x12\x39\n\x0e\x63oncrete_model\x18\x01 \x01(\x0b\x32!.operations_research.MPModelProto\x12>\n\x0freference_model\x18\x02 \x01(\x0b\x32%.operations_research.ReferenceMPModel\x12@\n\x10\x65xpression_model\x18\x03 \x01(\x0b\x32&.operations_research.ExpressionMPModel\"N\n\x17ReferenceMPModelRequest\x12\x33\n\x05model\x18\x01 \x01(\x0b\x32$.operations_research.ExtendedMPModelB)Z\'operations_research;operations_research'
   ,
   dependencies=[operations__research_dot_linear__solver__pb2.DESCRIPTOR,])
 
@@ -293,7 +293,7 @@ _REFERENCEMPCONSTRAINT = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='ref_var_coefficients', full_name='operations_research.ReferenceMPConstraint.ref_var_coefficients', index=3,
+      name='variable_coefficients', full_name='operations_research.ReferenceMPConstraint.variable_coefficients', index=3,
       number=7, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -302,55 +302,6 @@ _REFERENCEMPCONSTRAINT = _descriptor.Descriptor(
     _descriptor.FieldDescriptor(
       name='variable_references', full_name='operations_research.ReferenceMPConstraint.variable_references', index=4,
       number=8, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='variable_reference_names', full_name='operations_research.ReferenceMPConstraint.variable_reference_names', index=5,
-      number=9, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='variables', full_name='operations_research.ReferenceMPConstraint.variables', index=6,
-      number=15, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='variable_names', full_name='operations_research.ReferenceMPConstraint.variable_names', index=7,
-      number=16, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='var_coefficients', full_name='operations_research.ReferenceMPConstraint.var_coefficients', index=8,
-      number=17, type=1, cpp_type=5, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='expressions', full_name='operations_research.ReferenceMPConstraint.expressions', index=9,
-      number=20, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='expression_names', full_name='operations_research.ReferenceMPConstraint.expression_names', index=10,
-      number=21, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='expression_coefficients', full_name='operations_research.ReferenceMPConstraint.expression_coefficients', index=11,
-      number=22, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -368,7 +319,7 @@ _REFERENCEMPCONSTRAINT = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=1035,
-  serialized_end=1488,
+  serialized_end=1233,
 )
 
 
@@ -462,8 +413,8 @@ _REFERENCEMPMODEL = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1491,
-  serialized_end=1940,
+  serialized_start=1236,
+  serialized_end=1685,
 )
 
 
@@ -508,8 +459,8 @@ _EXTENDEDMPMODEL = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1943,
-  serialized_end=2149,
+  serialized_start=1688,
+  serialized_end=1894,
 )
 
 
@@ -540,8 +491,8 @@ _REFERENCEMPMODELREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2151,
-  serialized_end=2229,
+  serialized_start=1896,
+  serialized_end=1974,
 )
 
 _MPEXPRESSION.fields_by_name['variables'].message_type = _REFERENCEMPVARIABLE
@@ -553,8 +504,6 @@ _EXPRESSIONMPMODEL.fields_by_name['solution_hint'].message_type = operations__re
 _EXPRESSIONMPMODEL.fields_by_name['expressions'].message_type = _MPEXPRESSION
 _EXPRESSIONMPMODEL.fields_by_name['reference_constraints'].message_type = _REFERENCEMPCONSTRAINT
 _REFERENCEMPCONSTRAINT.fields_by_name['variable_references'].message_type = _REFERENCEMPVARIABLE
-_REFERENCEMPCONSTRAINT.fields_by_name['variables'].message_type = operations__research_dot_linear__solver__pb2._MPVARIABLEPROTO
-_REFERENCEMPCONSTRAINT.fields_by_name['expressions'].message_type = _MPEXPRESSION
 _REFERENCEMPMODEL.fields_by_name['variables'].message_type = operations__research_dot_linear__solver__pb2._MPVARIABLEPROTO
 _REFERENCEMPMODEL.fields_by_name['constraints'].message_type = operations__research_dot_linear__solver__pb2._MPCONSTRAINTPROTO
 _REFERENCEMPMODEL.fields_by_name['reference_variables'].message_type = _REFERENCEMPVARIABLE
@@ -624,5 +573,5 @@ _sym_db.RegisterMessage(ReferenceMPModelRequest)
 
 
 DESCRIPTOR._options = None
-_REFERENCEMPCONSTRAINT.fields_by_name['ref_var_coefficients']._options = None
+_REFERENCEMPCONSTRAINT.fields_by_name['variable_coefficients']._options = None
 # @@protoc_insertion_point(module_scope)

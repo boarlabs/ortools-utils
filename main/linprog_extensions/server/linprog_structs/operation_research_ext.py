@@ -500,29 +500,22 @@ class ReferenceMPConstraintExt(Container, ReferenceMPConstraint):
         lower_bound = obj.lower_bound
         upper_bound = obj.upper_bound
         name = obj.name
-        ref_var_coefficients = obj.ref_var_coefficients
+        variable_coefficients = obj.variable_coefficients
         variable_references = from_list(ReferenceMPVariableExt.from_proto, obj.variable_references)
-        variable_reference_names = obj.variable_reference_names
-        variables = from_list(MPVariableProtoExt.from_proto, obj.variables)
-        variable_names = obj.variable_names
-        var_coefficients = obj.var_coefficients
-        expressions = from_list(MPExpressionExt.from_proto, obj.expressions)
-        expression_names = obj.expression_names
-        expression_coefficients = obj.expression_coefficients
+        # variable_reference_names = obj.variable_reference_names
+        # variables = from_list(MPVariableProtoExt.from_proto, obj.variables)
+        # variable_names = obj.variable_names
+        # var_coefficients = obj.var_coefficients
+        # expressions = from_list(MPExpressionExt.from_proto, obj.expressions)
+        # expression_names = obj.expression_names
+        # expression_coefficients = obj.expression_coefficients
 
         return ReferenceMPConstraintExt(
             lower_bound,
             upper_bound,
             name,
-            ref_var_coefficients,
+            variable_coefficients,
             variable_references,
-            variable_reference_names,
-            variables,
-            variable_names,
-            var_coefficients,
-            expressions,
-            expression_names,
-            expression_coefficients,
         ) 
     
     def add_tags(self):
