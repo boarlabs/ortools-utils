@@ -307,9 +307,19 @@ class Collection:
                 lower_bound = 0,
                 upper_bound = 0,
                 name = f"con_coupling_net_export[{idx}]",
-                expression_coefficients = [-1],
-                expressions = [self.sum_of_component_net_exports[idx]],
-                variables = [self.net_export[idx]],
-                var_coefficients = [1],
+                variable_references = [
+                    ReferenceMPVariable(
+                        var_name = f"net_export[{idx}]",
+                    ),
+                    ReferenceMPVariable(
+                        var_name = f"sum_of_component_net_exports[{idx}]"
+                    ),
+                ],
+                variable_coefficients = [1, -1], 
+
+                # expression_coefficients = [-1],
+                # expressions = [self.sum_of_component_net_exports[idx]],
+                # variables = [self.net_export[idx]],
+                # var_coefficients = [1],
             ) for idx in range(len(interval_set))
         ]
