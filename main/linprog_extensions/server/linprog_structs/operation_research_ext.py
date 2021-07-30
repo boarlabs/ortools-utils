@@ -1,4 +1,5 @@
 from __future__ import annotations
+from main.linprog_extensions.server.struct_utils import hierarchy
 # from main.linprog_extensions.server.struct_utils import component
 from os import name
 from typing import List, Any, TypeVar, Callable, Type, cast, Optional
@@ -600,6 +601,9 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.relative_referecnes = False
+        self.model_dependencies_configured = list()
+
         return
     
     def __bool__(self):
@@ -640,6 +644,56 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
             "type=ReferenceMPModel",
             f"model_dependencies={str(self.model_dependencies)}",
         ]
+        return
+    
+    def configure_mipmodel(self):
+
+        self.mipmodel = MipModel(
+            name=self.name,
+            maximize=self.maximize,
+        )
+
+        for variable in self.variables:
+            self.mipmodel.add_variable(
+                variable.configure_mipmodel()
+            )
+        
+        for constraint in self.constraints:
+            self.mipmodel.add_constraint(
+                constraint.configure_mipmodel()
+            )
+
+        for model in self.model_dependencies_configured:
+            self.mipmodel.add_model(model.mipmodel)
+        
+        ## So the question here is that what additional aspects/changes we should
+        ## consider here for the Reference model. --> it all is about References outside the model
+        ## which now their mipmodel has been added.(again what did happen when we added a mipmodel to another?)
+        #### I guess the mipmodel references and connections will be established.
+        ## is it enough for dealing with Reference variables?
+        ## I think still we would need to replace a Refvar , with the actual Variable/Exp
+
+
+        ## and then there is the story of Relative references.
+        ## okay so we need to decide about the Relative references here.
+        ## if they do exist, there is nothing we can do about them until 
+        ## all models are configured, so we would need to come back for them
+        ## figuring out which Refvar does or does not use of relative references at this point
+        ## is also useless, so better just skipp on all of that 
+
+        if self.relative_referecnes:
+            return
+
+
+        for expression in self.expressions:
+            self.mipmodel.add_expression(
+                expression.configure_mipmodel()
+            )
+        for reference_constraint in self.reference_constraints:
+            self.mipmodel.add_constraint(
+                reference_constraint.configure_mipmodel()
+            )
+
         return
 
 
@@ -724,6 +778,7 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.configured = False
         return
 
     @staticmethod
@@ -748,9 +803,44 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
         
         if self.expression_model:
             self.expression_model.configure_mipmodel()
+        
+        self.configured = True
         return
     
+    def configure_mip_dependent(self):
+        
+        list_model_dependencies = self.reference_model.model_dependencies
+        if list_model_dependencies:
+            for model_name in list_model_dependencies:
+                ## find model based on the model name:
+                ## 
+                if not isinstance(model_name, str):
+                    continue
 
+                if model_name == 'parent':
+                    self.reference_model.relative_referecnes = True
+                    continue
+                
+                model = Catalogue.find_components(
+                    hierarchy_name=self._hierarchy.hierarchy_name,
+                    tags=[f"name={model_name}"],
+                )
+
+                # ToDo: Is there anyways that I won't have to use this Find function,
+                #  at least not in this expensive form?
+                assert(len(model)==1)
+
+                if not(model[0]._parent_component.configured):
+                    return
+                
+                list_model_dependencies.remove(model_name)
+                self.reference_model.model_dependencies_configured.append(model[0])
+
+        ## okay so at this point, all the model dependencies should be met:
+
+        self.reference_model.configure_mipmodel()
+        self.configured = True
+        return
 @dataclass
 class ReferenceMPModelRequestExt(Container, ReferenceMPModelRequest):
 
@@ -791,12 +881,30 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
 
     def configure_references(self):
 
-        ## so here is the goal to establish the logic for Order of Construction.
+        ## the goal to establish the logic for Order of Construction.
         ## There is two notes to consider 
         ## 1- all concrete models should be built before the reference Ones
             ## What if we call the build_model concurently on all list ietms?
             ## some of them will have to wait till the others are finished?
+        non_configured = self.model_requests
 
         for model_request in self.model_requests:
             model_request.model.configure_mip_independent()
+            if model_request.model.configured:
+                non_configured.remove(model_request)
+
+        
+        for model_request in self.model_requests:
+            model_request.model.configure_mip_dependent()
+        
+        index = 0
+        while non_configured:
+            if index >=  len(non_configured):
+                index = 0
+            non_configured[index].model.configure_mip_dependent()
+            if model_request.model.configured:
+                non_configured.remove(model_request)
+            else:
+                index += 1
+            
         return
