@@ -430,8 +430,27 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
         return component[0].mipvariable
     
     def replace_relative_reference(self, parent):
-        raise(NotImplementedError)
+        ## okay so what do we want to do here.
+        ## there is a reference variable that the model feature of it has a relative reference
+        ##  the question would be how to resolve that "parent" reference,
+        ## Are there any additional relative references I would need?
 
+        ## so in my example i have model_name = "parent.{component_element}"
+        ## so if the component_element name would be gen_0 we actually have "parent.gen_0"
+        ## so lets say the parent name is "instance" , then if I simply replace parent
+        ## with the name "instance.gen_0" it would not find any Configured Component
+        ## but here instead we need the "gen_0" part to find that component.
+        ## so then here for this kind of reference it would be easy, we don't even need the parent.
+
+        self.model_name.replace("parent.")
+        
+        ## ToDo: what if we had some more complicated wildcard referecing like parent.child
+
+        ## there is only one thing here, after we created these additional Constraints.
+        ## we would need to Re-ADD this mipmodel (with new exprs, and constraints.) to the parent mipmodel
+
+        # raise(NotImplementedError)
+        return
 
 @dataclass
 class MPExpressionExt(Container, MPExpression):
@@ -474,7 +493,6 @@ class MPExpressionExt(Container, MPExpression):
         return
     
     def configure_mipmodel(self):
-
         self.mipvariable = MipExpression(
             name=self.name,
             lower_bound=self.lower_bound,
@@ -488,11 +506,9 @@ class MPExpressionExt(Container, MPExpression):
         return self.mipvariable
     
     def replace_relative_reference(self, parent):
-        
         for ref_var in self.variables:
             ref_var.replace_relative_reference(parent)
         return
-
 
 
 @dataclass
@@ -506,7 +522,6 @@ class ReferenceMPConstraintExt(Container, ReferenceMPConstraint):
     
     @staticmethod
     def from_proto(obj:Any):
-
         # ToDo: checkout the situation with this RefConstraints and how it includes Concrete variables
         lower_bound = obj.lower_bound
         upper_bound = obj.upper_bound
@@ -540,12 +555,10 @@ class ReferenceMPConstraintExt(Container, ReferenceMPConstraint):
     def configure_mipmodel(self):
         return
     
-    def replace_relative_reference(self, parent_name):
-
+    def replace_relative_reference(self, parent):
         for ref_var in self.variable_references:
-            ref_var.replace_relative_reference(parent_name)
+            ref_var.replace_relative_reference(parent)
         return
-
 
 
 @dataclass
@@ -620,7 +633,6 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
         self.set_children()
         self.relative_referecnes = False
         self.model_dependencies_configured = list()
-
         return
     
     def __bool__(self):
@@ -735,18 +747,20 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
         ### but we probably won't be able to go and see its Component.
         ### still the Name of the MipModel would be the same.
 
-        parent_model_name = self.mipmodel.parent_mipmodel.name
+        parent = self.mipmodel.parent_mipmodel
 
         for reference_var in self.reference_variables:
-            reference_var.replace_relative_reference(parent_name = parent_model_name)
+            reference_var.replace_relative_reference(parent)
 
         for expression in self.expressions:
-            expression.replace_relative_reference(parent_name = parent_model_name)
+            expression.replace_relative_reference(parent)
         
         for constraint in self.reference_constraints:
-            constraint.replace_relative_reference(parent_name = parent_model_name)
+            constraint.replace_relative_reference(parent)
         
         self._setup_expressions_constraints()
+
+        parent.update_mipmodel(self.mipmodel)
         return 
 
 
@@ -847,10 +861,9 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
         )
     
     def configure_mip_independent(self):
-
         if self.reference_model:
             return
-        
+
         if self.concrete_model:
             self.concrete_model.configure_mipmodel()
         
@@ -861,7 +874,6 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
         return
     
     def configure_mip_dependent(self):
-        
         list_model_dependencies = self.reference_model.model_dependencies
         if list_model_dependencies:
             for model_name in list_model_dependencies:
@@ -894,6 +906,8 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
         self.reference_model.configure_mipmodel()
         self.configured = True
         return
+
+
 @dataclass
 class ReferenceMPModelRequestExt(Container, ReferenceMPModelRequest):
 
@@ -963,5 +977,8 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
                     relative_references.append(model_request)
             else:
                 index += 1
+        
+        for model_request in relative_references:
+            model_request.model.reference_model.configure_relative_references()
             
         return

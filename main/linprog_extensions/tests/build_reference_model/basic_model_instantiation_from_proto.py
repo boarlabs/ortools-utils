@@ -24,7 +24,7 @@ def instantiate_model():
     load_data = pd.read_excel(f"{data_directory_path}/{data_file_name}", sheet_name="Load", index_col=0)
 
     # Model
-    instance = ReferenceMPModel()
+    instance = ReferenceMPModel(name= "problem_instance")
     instance.build_final = True
 
     # Sets
