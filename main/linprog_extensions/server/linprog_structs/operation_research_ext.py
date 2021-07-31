@@ -428,6 +428,9 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
             ValueError("component for the defined reference variable cannot be found")
         
         return component[0].mipvariable
+    
+    def replace_relative_reference(self, parent):
+        raise(NotImplementedError)
 
 
 @dataclass
@@ -483,6 +486,13 @@ class MPExpressionExt(Container, MPExpression):
             ],
         )
         return self.mipvariable
+    
+    def replace_relative_reference(self, parent):
+        
+        for ref_var in self.variables:
+            ref_var.replace_relative_reference(parent)
+        return
+
 
 
 @dataclass
@@ -529,6 +539,13 @@ class ReferenceMPConstraintExt(Container, ReferenceMPConstraint):
 
     def configure_mipmodel(self):
         return
+    
+    def replace_relative_reference(self, parent_name):
+
+        for ref_var in self.variable_references:
+            ref_var.replace_relative_reference(parent_name)
+        return
+
 
 
 @dataclass
@@ -684,7 +701,10 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
         if self.relative_referecnes:
             return
 
-
+        self._setup_expressions_constraints()
+        return
+    
+    def _setup_expressions_constraints(self):
         for expression in self.expressions:
             self.mipmodel.add_expression(
                 expression.configure_mipmodel()
@@ -693,8 +713,41 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
             self.mipmodel.add_constraint(
                 reference_constraint.configure_mipmodel()
             )
-
         return
+
+    def configure_relative_references(self):
+
+        ## so here if we are dealing with the Relative references that could
+        ## be either attached to the model or inside the expressions.
+        ## we would have wanted to replace those parent, etc. here if we could,
+        ## so then I could call the expressions,constraints, the normal way.
+        ## but If it is not possible then it means that I would need to introduce separate functions
+        ## under them
+
+        ## so how can we figure out and replace the Parent?
+
+        #### first thing to remember is that from the Hierarchy we 
+        #### cannot find the Parent Model.
+        #### But this reference model is already is configured.
+        #### So is its Parent model. So in that Parent model we have the names of the childs,
+        ### and we are able to search them.
+        ### then the mipmodels are connected, from one mipmodel we would be able to find the parent mipmodel
+        ### but we probably won't be able to go and see its Component.
+        ### still the Name of the MipModel would be the same.
+
+        parent_model_name = self.mipmodel.parent_mipmodel.name
+
+        for reference_var in self.reference_variables:
+            reference_var.replace_relative_reference(parent_name = parent_model_name)
+
+        for expression in self.expressions:
+            expression.replace_relative_reference(parent_name = parent_model_name)
+        
+        for constraint in self.reference_constraints:
+            constraint.replace_relative_reference(parent_name = parent_model_name)
+        
+        self._setup_expressions_constraints()
+        return 
 
 
 @dataclass
@@ -887,6 +940,7 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
             ## What if we call the build_model concurently on all list ietms?
             ## some of them will have to wait till the others are finished?
         non_configured = self.model_requests
+        relative_references = list()
 
         for model_request in self.model_requests:
             model_request.model.configure_mip_independent()
@@ -904,6 +958,9 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
             non_configured[index].model.configure_mip_dependent()
             if model_request.model.configured:
                 non_configured.remove(model_request)
+
+                if model_request.model.reference_model.relative_referecnes:
+                    relative_references.append(model_request)
             else:
                 index += 1
             
