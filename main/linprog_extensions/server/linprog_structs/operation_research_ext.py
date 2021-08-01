@@ -201,7 +201,6 @@ class MPConstraintProtoExt(Content, MPConstraintProto):
         return
     
     def configure_mipmodel(self):
-
         self.mipconstraint = MipConstraintPointer(
             name = self.name,
             lower_bound=self.lower_bound,
@@ -211,8 +210,6 @@ class MPConstraintProtoExt(Content, MPConstraintProto):
         ) 
         ## the parent component of MPConstraint is MPmodel which has MPVariable objects, which have mipvars
         return self.mipconstraint
-
-
 
 
 @dataclass
@@ -228,7 +225,6 @@ class MPIndicatorConstraintExt(Content, MPIndicatorConstraint):
         var_index = obj.var_index
         var_value = obj.var_value
         constraint =  MPConstraintProtoExt.from_proto(obj.constraint)
-
         return MPIndicatorConstraintExt(
             var_index,
             var_value,
@@ -244,7 +240,6 @@ class MPVariableProtoExt(Content, MPVariableProto):
         self.set_children()
         self.mipvariable = None
         return
-
 
     @staticmethod
     def from_proto(obj:Any): 
@@ -284,6 +279,7 @@ class MPVariableProtoExt(Content, MPVariableProto):
         )
 
         return self.mipvariable
+
 
 @dataclass
 class MPGeneralConstraintProtoExt(Container, MPGeneralConstraintProto):
@@ -386,7 +382,6 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
         )
       
     def add_tags(self):
-
         if isinstance(self._parent_component, ReferenceMPModelExt):
             model_name = self._parent_component.name 
         elif isinstance(self._parent_component, MPExpressionExt):
@@ -402,7 +397,6 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
         ]
         return
     
-
     def configure_mipmodel(self):
         ## the returned object  could be A MipVariablePointer or a MipExpression
         ## the ReferenceVar itself could point to a concrete or reference var.
@@ -430,27 +424,10 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
         return component[0].mipvariable
     
     def replace_relative_reference(self, parent):
-        ## okay so what do we want to do here.
-        ## there is a reference variable that the model feature of it has a relative reference
-        ##  the question would be how to resolve that "parent" reference,
-        ## Are there any additional relative references I would need?
-
-        ## so in my example i have model_name = "parent.{component_element}"
-        ## so if the component_element name would be gen_0 we actually have "parent.gen_0"
-        ## so lets say the parent name is "instance" , then if I simply replace parent
-        ## with the name "instance.gen_0" it would not find any Configured Component
-        ## but here instead we need the "gen_0" part to find that component.
-        ## so then here for this kind of reference it would be easy, we don't even need the parent.
-
-        self.model_name.replace("parent.")
-        
-        ## ToDo: what if we had some more complicated wildcard referecing like parent.child
-
-        ## there is only one thing here, after we created these additional Constraints.
-        ## we would need to Re-ADD this mipmodel (with new exprs, and constraints.) to the parent mipmodel
-
-        # raise(NotImplementedError)
+        ## ToDo: Check Issue #28
+        self.model_name.replace("parent.")       
         return
+
 
 @dataclass
 class MPExpressionExt(Container, MPExpression):
@@ -517,9 +494,9 @@ class ReferenceMPConstraintExt(Container, ReferenceMPConstraint):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.mipconstraint = None
         return
 
-    
     @staticmethod
     def from_proto(obj:Any):
         # ToDo: checkout the situation with this RefConstraints and how it includes Concrete variables
@@ -551,10 +528,18 @@ class ReferenceMPConstraintExt(Container, ReferenceMPConstraint):
         ]
         return
     
-
     def configure_mipmodel(self):
-        return
-    
+        self.mipconstraint = MipConstraintPointer(
+            name = self.name,
+            lower_bound=self.lower_bound,
+            upper_bound=self.upper_bound,
+            coefficient=self.variable_coefficients,
+            variables = [ref_variable.configure_mipmodel() for ref_variable in self.variable_references]
+        ) 
+        ## the parent component of MPConstraint is MPmodel which has MPVariable objects, which have mipvars
+
+        return self.mipconstraint
+
     def replace_relative_reference(self, parent):
         for ref_var in self.variable_references:
             ref_var.replace_relative_reference(parent)
@@ -622,8 +607,8 @@ class MPModelProtoExt(Container, MPModelProto):
             self.mipmodel.add_constraint(
                 constraint.configure_mipmodel()
             )
-
         return
+
 
 @dataclass
 class ReferenceMPModelExt(Container, ReferenceMPModel):
@@ -676,39 +661,20 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
         return
     
     def configure_mipmodel(self):
-
         self.mipmodel = MipModel(
             name=self.name,
             maximize=self.maximize,
         )
-
         for variable in self.variables:
             self.mipmodel.add_variable(
                 variable.configure_mipmodel()
-            )
-        
+            )   
         for constraint in self.constraints:
             self.mipmodel.add_constraint(
                 constraint.configure_mipmodel()
             )
-
         for model in self.model_dependencies_configured:
             self.mipmodel.add_model(model.mipmodel)
-        
-        ## So the question here is that what additional aspects/changes we should
-        ## consider here for the Reference model. --> it all is about References outside the model
-        ## which now their mipmodel has been added.(again what did happen when we added a mipmodel to another?)
-        #### I guess the mipmodel references and connections will be established.
-        ## is it enough for dealing with Reference variables?
-        ## I think still we would need to replace a Refvar , with the actual Variable/Exp
-
-
-        ## and then there is the story of Relative references.
-        ## okay so we need to decide about the Relative references here.
-        ## if they do exist, there is nothing we can do about them until 
-        ## all models are configured, so we would need to come back for them
-        ## figuring out which Refvar does or does not use of relative references at this point
-        ## is also useless, so better just skipp on all of that 
 
         if self.relative_referecnes:
             return
@@ -728,25 +694,6 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
         return
 
     def configure_relative_references(self):
-
-        ## so here if we are dealing with the Relative references that could
-        ## be either attached to the model or inside the expressions.
-        ## we would have wanted to replace those parent, etc. here if we could,
-        ## so then I could call the expressions,constraints, the normal way.
-        ## but If it is not possible then it means that I would need to introduce separate functions
-        ## under them
-
-        ## so how can we figure out and replace the Parent?
-
-        #### first thing to remember is that from the Hierarchy we 
-        #### cannot find the Parent Model.
-        #### But this reference model is already is configured.
-        #### So is its Parent model. So in that Parent model we have the names of the childs,
-        ### and we are able to search them.
-        ### then the mipmodels are connected, from one mipmodel we would be able to find the parent mipmodel
-        ### but we probably won't be able to go and see its Component.
-        ### still the Name of the MipModel would be the same.
-
         parent = self.mipmodel.parent_mipmodel
 
         for reference_var in self.reference_variables:
@@ -759,8 +706,7 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
             constraint.replace_relative_reference(parent)
         
         self._setup_expressions_constraints()
-
-        parent.update_mipmodel(self.mipmodel)
+        parent.update_model(self.mipmodel)
         return 
 
 
@@ -838,6 +784,7 @@ class ExpressionMPModelExt(Container, ExpressionMPModel):
             )
 
         return
+
 
 @dataclass
 class ExtendedMPModelExt(Container, ExtendedMPModel):
