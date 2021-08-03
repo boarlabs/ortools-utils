@@ -1,5 +1,5 @@
 from __future__ import annotations
-from main.linprog_extensions.server.struct_utils import hierarchy
+# from main.linprog_extensions.server.struct_utils import hierarchy
 # from main.linprog_extensions.server.struct_utils import component
 from os import name
 from typing import List, Any, TypeVar, Callable, Type, cast, Optional
@@ -425,7 +425,7 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
     
     def replace_relative_reference(self, parent):
         ## ToDo: Check Issue #28
-        self.model_name.replace("parent.")       
+        self.model_name = self.model_name.replace("parent.", "")       
         return
 
 
@@ -623,7 +623,8 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
     def __bool__(self):
         return bool(
             self.variables or 
-            self.reference_variables
+            self.reference_variables or
+            self.model_dependencies
         )
 
     @staticmethod
@@ -808,6 +809,7 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
         )
     
     def configure_mip_independent(self):
+
         if self.reference_model:
             return
 
@@ -821,7 +823,7 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
         return
     
     def configure_mip_dependent(self):
-        list_model_dependencies = self.reference_model.model_dependencies
+        list_model_dependencies = list(self.reference_model.model_dependencies).copy()
         if list_model_dependencies:
             for model_name in list_model_dependencies:
                 ## find model based on the model name:
@@ -835,7 +837,7 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
                 
                 model = Catalogue.find_components(
                     hierarchy_name=self._hierarchy.hierarchy_name,
-                    tags=[f"name={model_name}"],
+                    tag_list=[f"name={model_name}"],
                 )
 
                 # ToDo: Is there anyways that I won't have to use this Find function,
@@ -845,7 +847,7 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
                 if not(model[0]._parent_component.configured):
                     return
                 
-                list_model_dependencies.remove(model_name)
+                # list_model_dependencies.remove(model_name)
                 self.reference_model.model_dependencies_configured.append(model[0])
 
         ## okay so at this point, all the model dependencies should be met:
@@ -900,7 +902,7 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
         ## 1- all concrete models should be built before the reference Ones
             ## What if we call the build_model concurently on all list ietms?
             ## some of them will have to wait till the others are finished?
-        non_configured = self.model_requests
+        non_configured = self.model_requests.copy()
         relative_references = list()
 
         for model_request in self.model_requests:
@@ -909,14 +911,15 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
                 non_configured.remove(model_request)
 
         
-        for model_request in self.model_requests:
-            model_request.model.configure_mip_dependent()
+        # for model_request in self.model_requests:
+        #     model_request.model.configure_mip_dependent()
         
         index = 0
         while non_configured:
+            model_request = non_configured[index]
             if index >=  len(non_configured):
                 index = 0
-            non_configured[index].model.configure_mip_dependent()
+            model_request.model.configure_mip_dependent()
             if model_request.model.configured:
                 non_configured.remove(model_request)
 

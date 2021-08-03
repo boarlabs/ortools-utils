@@ -262,7 +262,7 @@ class Collection:
                 [
                     ReferenceMPVariable(
                         var_name = f"net_export[{idx}]",
-                        model_name = "parent.{component_element}",
+                        model_name = f"parent.{component_element}",
                         )  for component_element in self.component_element_ids 
                 ]
             ) 
