@@ -1,4 +1,5 @@
 from __future__ import annotations
+# from main.linprog_extensions.server.struct_utils import hierarchy
 # from main.linprog_extensions.server.struct_utils import component
 from os import name
 from typing import List, Any, TypeVar, Callable, Type, cast, Optional
@@ -200,7 +201,6 @@ class MPConstraintProtoExt(Content, MPConstraintProto):
         return
     
     def configure_mipmodel(self):
-
         self.mipconstraint = MipConstraintPointer(
             name = self.name,
             lower_bound=self.lower_bound,
@@ -210,8 +210,6 @@ class MPConstraintProtoExt(Content, MPConstraintProto):
         ) 
         ## the parent component of MPConstraint is MPmodel which has MPVariable objects, which have mipvars
         return self.mipconstraint
-
-
 
 
 @dataclass
@@ -227,7 +225,6 @@ class MPIndicatorConstraintExt(Content, MPIndicatorConstraint):
         var_index = obj.var_index
         var_value = obj.var_value
         constraint =  MPConstraintProtoExt.from_proto(obj.constraint)
-
         return MPIndicatorConstraintExt(
             var_index,
             var_value,
@@ -243,7 +240,6 @@ class MPVariableProtoExt(Content, MPVariableProto):
         self.set_children()
         self.mipvariable = None
         return
-
 
     @staticmethod
     def from_proto(obj:Any): 
@@ -283,6 +279,7 @@ class MPVariableProtoExt(Content, MPVariableProto):
         )
 
         return self.mipvariable
+
 
 @dataclass
 class MPGeneralConstraintProtoExt(Container, MPGeneralConstraintProto):
@@ -385,7 +382,6 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
         )
       
     def add_tags(self):
-
         if isinstance(self._parent_component, ReferenceMPModelExt):
             model_name = self._parent_component.name 
         elif isinstance(self._parent_component, MPExpressionExt):
@@ -401,7 +397,6 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
         ]
         return
     
-
     def configure_mipmodel(self):
         ## the returned object  could be A MipVariablePointer or a MipExpression
         ## the ReferenceVar itself could point to a concrete or reference var.
@@ -427,6 +422,11 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
             ValueError("component for the defined reference variable cannot be found")
         
         return component[0].mipvariable
+    
+    def replace_relative_reference(self, parent):
+        ## ToDo: Check Issue #28
+        self.model_name = self.model_name.replace("parent.", "")       
+        return
 
 
 @dataclass
@@ -470,7 +470,6 @@ class MPExpressionExt(Container, MPExpression):
         return
     
     def configure_mipmodel(self):
-
         self.mipvariable = MipExpression(
             name=self.name,
             lower_bound=self.lower_bound,
@@ -482,6 +481,11 @@ class MPExpressionExt(Container, MPExpression):
             ],
         )
         return self.mipvariable
+    
+    def replace_relative_reference(self, parent):
+        for ref_var in self.variables:
+            ref_var.replace_relative_reference(parent)
+        return
 
 
 @dataclass
@@ -490,12 +494,11 @@ class ReferenceMPConstraintExt(Container, ReferenceMPConstraint):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.mipconstraint = None
         return
 
-    
     @staticmethod
     def from_proto(obj:Any):
-
         # ToDo: checkout the situation with this RefConstraints and how it includes Concrete variables
         lower_bound = obj.lower_bound
         upper_bound = obj.upper_bound
@@ -525,8 +528,21 @@ class ReferenceMPConstraintExt(Container, ReferenceMPConstraint):
         ]
         return
     
-
     def configure_mipmodel(self):
+        self.mipconstraint = MipConstraintPointer(
+            name = self.name,
+            lower_bound=self.lower_bound,
+            upper_bound=self.upper_bound,
+            coefficient=self.variable_coefficients,
+            variables = [ref_variable.configure_mipmodel() for ref_variable in self.variable_references]
+        ) 
+        ## the parent component of MPConstraint is MPmodel which has MPVariable objects, which have mipvars
+
+        return self.mipconstraint
+
+    def replace_relative_reference(self, parent):
+        for ref_var in self.variable_references:
+            ref_var.replace_relative_reference(parent)
         return
 
 
@@ -591,8 +607,8 @@ class MPModelProtoExt(Container, MPModelProto):
             self.mipmodel.add_constraint(
                 constraint.configure_mipmodel()
             )
-
         return
+
 
 @dataclass
 class ReferenceMPModelExt(Container, ReferenceMPModel):
@@ -600,12 +616,15 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.relative_referecnes = False
+        self.model_dependencies_configured = list()
         return
     
     def __bool__(self):
         return bool(
             self.variables or 
-            self.reference_variables
+            self.reference_variables or
+            self.model_dependencies
         )
 
     @staticmethod
@@ -641,6 +660,55 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
             f"model_dependencies={str(self.model_dependencies)}",
         ]
         return
+    
+    def configure_mipmodel(self):
+        self.mipmodel = MipModel(
+            name=self.name,
+            maximize=self.maximize,
+        )
+        for variable in self.variables:
+            self.mipmodel.add_variable(
+                variable.configure_mipmodel()
+            )   
+        for constraint in self.constraints:
+            self.mipmodel.add_constraint(
+                constraint.configure_mipmodel()
+            )
+        for model in self.model_dependencies_configured:
+            self.mipmodel.add_model(model.mipmodel)
+
+        if self.relative_referecnes:
+            return
+
+        self._setup_expressions_constraints()
+        return
+    
+    def _setup_expressions_constraints(self):
+        for expression in self.expressions:
+            self.mipmodel.add_expression(
+                expression.configure_mipmodel()
+            )
+        for reference_constraint in self.reference_constraints:
+            self.mipmodel.add_constraint(
+                reference_constraint.configure_mipmodel()
+            )
+        return
+
+    def configure_relative_references(self):
+        parent = self.mipmodel.parent_mipmodel
+
+        for reference_var in self.reference_variables:
+            reference_var.replace_relative_reference(parent)
+
+        for expression in self.expressions:
+            expression.replace_relative_reference(parent)
+        
+        for constraint in self.reference_constraints:
+            constraint.replace_relative_reference(parent)
+        
+        self._setup_expressions_constraints()
+        parent.update_model(self.mipmodel)
+        return 
 
 
 @dataclass
@@ -718,12 +786,14 @@ class ExpressionMPModelExt(Container, ExpressionMPModel):
 
         return
 
+
 @dataclass
 class ExtendedMPModelExt(Container, ExtendedMPModel):
 
     def __post_init__(self):
         super().__post_init__()
         self.set_children()
+        self.configured = False
         return
 
     @staticmethod
@@ -742,14 +812,50 @@ class ExtendedMPModelExt(Container, ExtendedMPModel):
 
         if self.reference_model:
             return
-        
+
         if self.concrete_model:
             self.concrete_model.configure_mipmodel()
         
         if self.expression_model:
             self.expression_model.configure_mipmodel()
+        
+        self.configured = True
         return
     
+    def configure_mip_dependent(self):
+        list_model_dependencies = list(self.reference_model.model_dependencies).copy()
+        if list_model_dependencies:
+            for model_name in list_model_dependencies:
+                ## find model based on the model name:
+                ## 
+                if not isinstance(model_name, str):
+                    continue
+
+                if model_name == 'parent':
+                    self.reference_model.relative_referecnes = True
+                    continue
+                
+                model = Catalogue.find_components(
+                    hierarchy_name=self._hierarchy.hierarchy_name,
+                    tag_list=[f"name={model_name}"],
+                )
+
+                # ToDo: Is there anyways that I won't have to use this Find function,
+                #  at least not in this expensive form?
+                assert(len(model)==1)
+
+                if not(model[0]._parent_component.configured):
+                    return
+                
+                # list_model_dependencies.remove(model_name)
+                self.reference_model.model_dependencies_configured.append(model[0])
+
+        ## okay so at this point, all the model dependencies should be met:
+
+        self.reference_model.configure_mipmodel()
+        self.configured = True
+        return
+
 
 @dataclass
 class ReferenceMPModelRequestExt(Container, ReferenceMPModelRequest):
@@ -791,12 +897,38 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
 
     def configure_references(self):
 
-        ## so here is the goal to establish the logic for Order of Construction.
+        ## the goal to establish the logic for Order of Construction.
         ## There is two notes to consider 
         ## 1- all concrete models should be built before the reference Ones
             ## What if we call the build_model concurently on all list ietms?
             ## some of them will have to wait till the others are finished?
+        non_configured = self.model_requests.copy()
+        relative_references = list()
 
         for model_request in self.model_requests:
             model_request.model.configure_mip_independent()
+            if model_request.model.configured:
+                non_configured.remove(model_request)
+
+        
+        # for model_request in self.model_requests:
+        #     model_request.model.configure_mip_dependent()
+        
+        index = 0
+        while non_configured:
+            model_request = non_configured[index]
+            if index >=  len(non_configured):
+                index = 0
+            model_request.model.configure_mip_dependent()
+            if model_request.model.configured:
+                non_configured.remove(model_request)
+
+                if model_request.model.reference_model.relative_referecnes:
+                    relative_references.append(model_request)
+            else:
+                index += 1
+        
+        for model_request in relative_references:
+            model_request.model.reference_model.configure_relative_references()
+            
         return

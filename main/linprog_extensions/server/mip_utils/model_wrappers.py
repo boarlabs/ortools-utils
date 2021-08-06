@@ -44,7 +44,6 @@ class MipModel:
         self,
         variable_pointer,
     ):
-        
         variable_pointer.mipmodel = self
         self.varibale_pointers.append(variable_pointer)
         return
@@ -53,7 +52,6 @@ class MipModel:
         self,
         expression,
     ):
-
         expression.mipmodel = self
         self.expressions.append(expression)
         # okay so what needs to happen when an expression is added to the mipmodel?
@@ -73,25 +71,38 @@ class MipModel:
         self,
         mipmodel,
     ):
-
         self.mipmodels.append(mipmodel)
         mipmodel.parent_mipmodel = self
 
         for variable in mipmodel.varibale_pointers:
             self.add_variable(variable)
-            # mipmodel.varibale_pointers[key].add_mipmodel(self)
 
         for parameter in mipmodel.parameters:
             self.add_parameter(parameter)
 
         for constraint in mipmodel.constraint_pointers:
             self.add_constraint(constraint)
-            # mipmodel.constraint_pointers[key].add_mipmodel(self)
 
         for expression in mipmodel.expressions:
             self.add_expression(expression)
-            # mipmodel.expressions[key].add_mipmodel(self)
+        return
 
+    def update_model(self,mipmodel):
+        for variable in mipmodel.varibale_pointers:
+            if not(variable in self.varibale_pointers):
+                self.add_variable(variable)
+            
+        for parameter in mipmodel.parameters:
+            if not (parameter in self.parameters):
+                self.add_parameter(parameter)
+
+        for constraint in mipmodel.constraint_pointers:
+            if not (constraint in self.constraint_pointers):
+                self.add_constraint(constraint)
+
+        for expression in mipmodel.expressions:
+            if not (expression in self.expressions):
+                self.add_expression(expression)
         return
 
     def build_variable(
