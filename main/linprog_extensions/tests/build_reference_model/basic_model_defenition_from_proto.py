@@ -281,7 +281,7 @@ class Collection:
 
         self.sum_of_component_net_exports= [ 
             MPExpression(
-                name = f"sum_of_component_net_exports[{idx}]",
+                name = f"sum_of_component_net_exports[{idx+1}]",
                 variables = self.collection_components_net_exports[idx],    
                 variable_coefficients = [1]*len(self.collection_components_net_exports[idx]),
             ) for idx in range(len(interval_set))
@@ -306,13 +306,13 @@ class Collection:
             ReferenceMPConstraint(
                 lower_bound = 0,
                 upper_bound = 0,
-                name = f"con_coupling_net_export[{idx}]",
+                name = f"con_coupling_net_export[{idx+1}]",
                 variable_references = [
                     ReferenceMPVariable(
-                        var_name = f"net_export[{idx}]",
+                        var_name = f"net_export[{idx+1}]",
                     ),
                     ReferenceMPVariable(
-                        var_name = f"sum_of_component_net_exports[{idx}]"
+                        var_name = f"sum_of_component_net_exports[{idx+1}]"
                     ),
                 ],
                 variable_coefficients = [1, -1], 
@@ -323,3 +323,5 @@ class Collection:
                 # var_coefficients = [1],
             ) for idx in range(len(interval_set))
         ]
+
+        self.mipmodel.reference_constraints.extend(self.con_coupling_net_export)
