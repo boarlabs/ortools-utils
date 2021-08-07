@@ -618,6 +618,7 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
         self.set_children()
         self.relative_referecnes = False
         self.model_dependencies_configured = list()
+        self.mipmodel = None
         return
     
     def __bool__(self):
@@ -884,6 +885,7 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
         self.set_children()
         self.collect_tags()
         self.populate_hierarchy()
+        self.aggregate_model = None
         return
 
     @staticmethod
@@ -931,4 +933,17 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
         for model_request in relative_references:
             model_request.model.reference_model.configure_relative_references()
             
+        return
+
+
+    def build_final_mipmodel(self):
+        for model_request in self.model_requests:
+            if model_request.model.reference_model.build_final:
+                if not model_request.model.configured:
+                    ValueError("target model cannot be build before configure the references")
+                model_request.model.reference_model.mipmodel.build()
+                self.aggregate_model = model_request.model.reference_model.mipmodel.model
+        
+        if not self.aggregate_model:
+            ValueError("aggregate model could not be built")
         return
