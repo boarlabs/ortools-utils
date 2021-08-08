@@ -1,7 +1,10 @@
 from __future__ import annotations
 from typing import List, Any, TypeVar, Callable, Type, cast, Optional
 
-from operations_research import linear_solver_pb2
+from operations_research.linear_solver_pb2 import(
+    MPModelProto,
+    MPSolutionResponse,
+)
 
 from . import MipVariableArray
 
@@ -27,7 +30,8 @@ class MipModel:
         self.mipmodels = list()
 
         self.parent_mipmodel = None
-        self.model = linear_solver_pb2.MPModelProto()
+        self.model = MPModelProto()
+        self.solution_response = None
         # self.model_var_end_index = None
         # why we needed this? seems related to adding one mipmodel to another?
         return
@@ -139,6 +143,14 @@ class MipModel:
         return
 
 
+    def assemble_response(self):
+        self.solution_response = MPSolutionResponse()
+        for variable in self.varibale_pointers:
+            self.solution_response.variable_value.append(variable.variable_response)
+
+        for expression in self.expressions:
+            expression.assemble_response()
+        return
     # def update_variable(
     #     self,
     #     variable_pointer,

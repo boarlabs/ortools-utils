@@ -86,6 +86,7 @@ class MipVariablePointer:
         self._mipmodel = None
         self.mipmodel_var_index = None
         self.mipmodel_attached = False
+        self.variable_response = None
         return
 
     @property
@@ -128,7 +129,6 @@ class MipVariablePointer:
         self,
         objective_coefficient: Optional[MipParameterPointer],
     ):
-
         # if not self.objective_coefficient.value:
         #     self.objective_coefficient = objective_coefficient
         # if isinstance(self.objective_coefficient, MipParameterPointer):
@@ -139,6 +139,10 @@ class MipVariablePointer:
             # self.objective_coefficient = objective_coefficient
         # else:
             # self.objective_coefficient += objective_coefficient
+        return
+
+    def extract_response(self, response):
+        self.variable_response = response.variable_value[self.mipmodel_var_index]
         return
 
 

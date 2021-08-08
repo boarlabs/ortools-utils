@@ -896,6 +896,7 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
         self.collect_tags()
         self.populate_hierarchy()
         self.aggregate_model = None
+        self.aggregate_model_request_index = None
         return
 
     @staticmethod
@@ -947,12 +948,16 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
 
 
     def build_final_mipmodel(self):
+        request_index = 0
         for model_request in self.model_requests:
             if model_request.model.reference_model.build_final:
                 if not model_request.model.configured:
                     ValueError("target model cannot be build before configure the references")
+                self.aggregate_model_request_index = request_index
                 model_request.model.reference_model.mipmodel.build()
                 self.aggregate_model = model_request.model.reference_model.mipmodel.model
+                return
+            request_index += 1
         
         if not self.aggregate_model:
             ValueError("aggregate model could not be built")
@@ -968,3 +973,14 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
         _ = solver.FillSolutionResponseProto(response)
         self.response = response
         return 
+    
+
+    def distribute_results(self):
+        final_request = self.model_requests[self.aggregate_model_request_index]
+        var_list = final_request.model.reference_model.mipmodel.varibale_pointers
+        for variable in var_list:
+            variable.extract_response(self.response)
+        
+        for model_request in self.model_requests:
+            model_request.model.reference_model.mipmodel.assemble_response()
+
