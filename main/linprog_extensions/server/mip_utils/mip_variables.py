@@ -144,6 +144,9 @@ class MipVariablePointer:
     def extract_response(self, response):
         self.variable_response = response.variable_value[self.mipmodel_var_index]
         return
+    
+    def return_response(self):
+        return self.variable_response
 
 
 

@@ -18,8 +18,7 @@ class MipModel:
         self,
         name: Optional[str] = '',
         maximize: Optional[bool]= False,
-    ):
-        
+    ): 
         self.name = name
         self.maximize= maximize
         # maybe later I can edit the init so that one could instantiate with vairables, etc., provided.
@@ -146,11 +145,15 @@ class MipModel:
     def assemble_response(self):
         self.solution_response = MPSolutionResponse()
         for variable in self.varibale_pointers:
-            self.solution_response.variable_value.append(variable.variable_response)
+            self.solution_response.variable_value.append(variable.return_response())
 
         for expression in self.expressions:
-            expression.assemble_response()
+            expression.return_response()
         return
+
+
+
+        
     # def update_variable(
     #     self,
     #     variable_pointer,
