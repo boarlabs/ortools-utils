@@ -6,6 +6,8 @@ from typing import List, Any, TypeVar, Callable, Type, cast, Optional
 from enum import Enum
 from dataclasses import dataclass, MISSING, fields
 
+from ortools.linear_solver import pywraplp
+
 from ..mip_utils import(
     MipModel,
     MipVariablePointer,
@@ -41,7 +43,8 @@ from .operations_research import(
     MPQuadraticConstraint,
     MPAbsConstraint,
     MPArrayConstraint,
-    MPArrayWithConstantConstraint
+    MPArrayWithConstantConstraint,
+    MPSolutionResponse,
 ) 
 
 
@@ -954,3 +957,14 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
         if not self.aggregate_model:
             ValueError("aggregate model could not be built")
         return
+
+
+    def solve_final_model(self):
+        solver = pywraplp.Solver.CreateSolver("GLOP")
+        solver.LoadModelFromProto(input_model=self.aggregate_model)
+        _ = solver.Solve()
+        
+        response = MPSolutionResponse()
+        _ = solver.FillSolutionResponseProto(response)
+        self.response = response
+        return 
