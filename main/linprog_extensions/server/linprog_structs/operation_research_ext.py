@@ -44,9 +44,12 @@ from .operations_research import(
     MPAbsConstraint,
     MPArrayConstraint,
     MPArrayWithConstantConstraint,
-    MPSolutionResponse,
 ) 
 
+
+from operations_research.linear_solver_pb2 import(
+    MPSolutionResponse as MPSolutionResponse_pb2
+)
 
 T = TypeVar("T")
 EnumT = TypeVar("EnumT", bound=Enum)
@@ -965,11 +968,13 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
 
 
     def solve_final_model(self):
+        ## ToDo: Need to move this out of this place maybe to the service 
+        
         solver = pywraplp.Solver.CreateSolver("GLOP")
         solver.LoadModelFromProto(input_model=self.aggregate_model)
         _ = solver.Solve()
         
-        response = MPSolutionResponse()
+        response = MPSolutionResponse_pb2()
         _ = solver.FillSolutionResponseProto(response)
         self.response = response
         return 

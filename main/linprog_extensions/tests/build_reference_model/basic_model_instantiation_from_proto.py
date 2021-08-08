@@ -50,7 +50,7 @@ def instantiate_model():
 
     load_params = {
         "name": "load_0",
-        "load": load_data["Load Profile"] * 0.9 * gen_data["Available Capacity"].sum()
+        "load": 0.05 *load_data["Load Profile"] * 0.9 * gen_data["Available Capacity"].sum()
     }
 
     collection_params = {

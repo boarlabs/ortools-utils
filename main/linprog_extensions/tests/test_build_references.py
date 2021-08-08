@@ -42,27 +42,26 @@ def test_configure_models():
 
     return
 
-
-
 def test_build_final_mipmodel():
-
     model_requests = instantiate_model()
     request_stream_struct = ReferenceMPModelRequestStreem.from_proto(model_requests)
     request_stream_struct.configure_references()
-
     request_stream_struct.build_final_mipmodel()
-
     final_build = request_stream_struct.aggregate_model
-
-
     return
 
-
+def test_solve_and_distribute_results():
+    model_requests = instantiate_model()
+    request_stream_struct = ReferenceMPModelRequestStreem.from_proto(model_requests)
+    request_stream_struct.configure_references()
+    request_stream_struct.build_final_mipmodel()
+    request_stream_struct.solve_final_model()
+    request_stream_struct.distribute_results()    
+    return
 
 def test_reference_functions():
     a = TestReturnRef()
     b = SecondTestClass()
-    
     c=[65]
     b.get_value(
         a.set_value(c)
@@ -78,8 +77,8 @@ if __name__ == "__main__":
 
     # test_configure_models() 
     # test_reference_functions()
-
-    test_build_final_mipmodel()
+    # test_build_final_mipmodel()
+    test_solve_and_distribute_results()
 
    
 

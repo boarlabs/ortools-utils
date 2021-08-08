@@ -57,7 +57,7 @@ class Load:
 
         # [self.mipmodel.variable.add(var) for var in self.net_export]
         self.mipmodel.variable.extend(self.net_export)
-        self.mipmodel.constraint.extend(self.load_ramp)
+        # self.mipmodel.constraint.extend(self.load_ramp)
         return
 
 
