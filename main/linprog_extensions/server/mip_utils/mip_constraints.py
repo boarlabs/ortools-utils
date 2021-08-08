@@ -29,6 +29,7 @@ class MipConstraintPointer:
         self.is_lazy = is_lazy
 
         self.var_index = list()
+        self.var_coeff_unpacked = list()
         self.mipconstraint = None
         self._mipmodel = None
         return
@@ -43,12 +44,12 @@ class MipConstraintPointer:
 
     def build(self):
 
-        self.var_index = self._get_variables_index()
+        self.var_index, self.var_coeff_unpacked = self._get_variables_index()
         lower_bound, upper_bound = self.update_rhs_for_expressions()
 
         self.mipconstraint = linear_solver_pb2.MPConstraintProto(
             var_index=self.var_index,
-            coefficient=self.coefficient,
+            coefficient=self.var_coeff_unpacked,
             lower_bound=lower_bound,
             upper_bound=upper_bound,
             name=str(self.name),
@@ -80,6 +81,7 @@ class MipConstraintPointer:
         We can add a MipModel to a constraint-pointer manually or as part of getting the indicies of the variables.
         """
         var_index_list = list()
+        var_coeff_list = list()
 
         if not self.mipmodel:
             mipmodel_list = [
@@ -94,6 +96,7 @@ class MipConstraintPointer:
         if not self.variables:
             ValueError("The constraint does not have any variables")
 
+        coeff_index = 0
         for variable in self.variables:
             if isinstance(variable, MipVariablePointer):
                 if (variable.mipmodel) and (not (variable.mipmodel == self.mipmodel)):
@@ -106,6 +109,7 @@ class MipConstraintPointer:
                     variable.build()
                 
                 var_index_list.append(variable.mipmodel_var_index)
+                var_coeff_list.append(self.coefficient[coeff_index])
                     
             elif hasattr(variable, "variable_list"):  # i.e. if it is an expresssion
                 if not variable.mipmodel_attached:
@@ -116,9 +120,16 @@ class MipConstraintPointer:
                     variable_pointer.mipmodel_var_index
                     for variable_pointer in variable.list_variable_coefficients()[0]
                 ]
-                var_index_list += var_index
 
-        return var_index_list
+                var_coeffs = [
+                    coefficient * self.coefficient[coeff_index]
+                        for coefficient in variable.list_variable_coefficients()[1]
+                ]
+                var_index_list += var_index
+                var_coeff_list += var_coeffs
+            coeff_index += 1
+
+        return var_index_list, var_coeff_list
 
 
 #Not Ready

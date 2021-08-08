@@ -55,10 +55,10 @@ class MipExpression:
         self.mipmodel_attached = False
 
         # we will have up to two constraints for the lower bound and upper bound limits
-        if lower_bound is not None:
+        if (lower_bound is not None) and  not(lower_bound == float('-inf')):
             self.add_constraint_pointer(lower_bound=lower_bound)
 
-        if upper_bound is not None:
+        if (upper_bound is not None) and  not(upper_bound == float('inf')):
             self.add_constraint_pointer(upper_bound=upper_bound)
 
         if objective_coefficient.value is not None:
@@ -158,6 +158,14 @@ class MipExpression:
     ):
         # here need to account for having some of the variables to be expressions.
 
+        if upper_bound and not(upper_bound == float('inf')):
+            ub_lb_indicator = "exp_upperbound"
+        elif lower_bound and not(upper_bound == float('-inf')):
+            ub_lb_indicator = "exp_lowerbound"
+        else:
+            ValueError("both upper bound and lower bound values are null")
+
+
         variables, coefficients = self.list_variable_coefficients()
         lower_bound, upper_bound = self.adjust_right_handside_for_paramters(
             lower_bound, upper_bound
@@ -168,7 +176,7 @@ class MipExpression:
             coefficient=coefficients,
             lower_bound=lower_bound,
             upper_bound=upper_bound,
-            name=None,
+            name= f"{self.name}.{ub_lb_indicator}",
         )
 
         self.constraint_pointers.append(constraint_pointer)

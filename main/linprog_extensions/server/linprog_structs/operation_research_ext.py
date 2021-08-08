@@ -202,7 +202,7 @@ class MPConstraintProtoExt(Content, MPConstraintProto):
     
     def configure_mipmodel(self):
         self.mipconstraint = MipConstraintPointer(
-            name = self.name,
+            name = f"{self._parent_component.name}.{self.name}",
             lower_bound=self.lower_bound,
             upper_bound=self.upper_bound,
             coefficient=self.coefficient,
@@ -271,7 +271,7 @@ class MPVariableProtoExt(Content, MPVariableProto):
     def configure_mipmodel(self):
 
         self.mipvariable = MipVariablePointer(
-            name= self.name,
+            name= f"{self._parent_component.name}.{self.name}",
             is_integer= self.is_integer,
             lower_bound=self.lower_bound,
             upper_bound=self.upper_bound,
@@ -382,9 +382,14 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
         )
       
     def add_tags(self):
-        if isinstance(self._parent_component, ReferenceMPModelExt):
+        
+        if self.model_name:
+            model_name = self.model_name
+        elif isinstance(self._parent_component, ReferenceMPModelExt):
             model_name = self._parent_component.name 
         elif isinstance(self._parent_component, MPExpressionExt):
+            model_name = self._parent_component._parent_component.name
+        elif isinstance(self._parent_component, ReferenceMPConstraintExt):
             model_name = self._parent_component._parent_component.name
         else:
             ValueError("the type of parent compoenet is not right!")
@@ -407,6 +412,8 @@ class ReferenceMPVariableExt(Content, ReferenceMPVariable):
             model_name = self._parent_component._parent_component.name
         elif isinstance(self._parent_component, ReferenceMPModelExt):
             model_name = self._parent_component.name
+        elif isinstance(self._parent_component, ReferenceMPConstraintExt):
+            model_name = self._parent_component._parent_component.name
         else:
             ValueError( "ReferenceVariable parent component is not right!")
 
@@ -471,7 +478,7 @@ class MPExpressionExt(Container, MPExpression):
     
     def configure_mipmodel(self):
         self.mipvariable = MipExpression(
-            name=self.name,
+            name=f"{self._parent_component.name}.{self.name}",
             lower_bound=self.lower_bound,
             upper_bound=self.upper_bound,
             objective_coefficient=MipParameterPointer(self.objective_coefficient),
@@ -618,6 +625,7 @@ class ReferenceMPModelExt(Container, ReferenceMPModel):
         self.set_children()
         self.relative_referecnes = False
         self.model_dependencies_configured = list()
+        self.mipmodel = None
         return
     
     def __bool__(self):
@@ -884,6 +892,7 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
         self.set_children()
         self.collect_tags()
         self.populate_hierarchy()
+        self.aggregate_model = None
         return
 
     @staticmethod
@@ -931,4 +940,17 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
         for model_request in relative_references:
             model_request.model.reference_model.configure_relative_references()
             
+        return
+
+
+    def build_final_mipmodel(self):
+        for model_request in self.model_requests:
+            if model_request.model.reference_model.build_final:
+                if not model_request.model.configured:
+                    ValueError("target model cannot be build before configure the references")
+                model_request.model.reference_model.mipmodel.build()
+                self.aggregate_model = model_request.model.reference_model.mipmodel.model
+        
+        if not self.aggregate_model:
+            ValueError("aggregate model could not be built")
         return
