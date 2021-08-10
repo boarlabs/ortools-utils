@@ -969,7 +969,7 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
 
     def solve_final_model(self):
         ## ToDo: Need to move this out of this place maybe to the service 
-        
+
         solver = pywraplp.Solver.CreateSolver("GLOP")
         solver.LoadModelFromProto(input_model=self.aggregate_model)
         _ = solver.Solve()
@@ -987,5 +987,11 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
             variable.extract_response(self.response)
         
         for model_request in self.model_requests:
-            model_request.model.reference_model.mipmodel.assemble_response()
+            if model_request.model.concrete_model:
+                model_request.model.concrete_model.mipmodel.assemble_response()
+            elif model_request.model.expression_model:
+                model_request.model.expression_model.mipmodel.assemble_response()
+            elif model_request.model.reference_model:
+                model_request.model.reference_model.mipmodel.assemble_response()
+        return
 
