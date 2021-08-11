@@ -621,3 +621,29 @@ class ExtendedMPModel(betterproto.Message):
 class ReferenceMPModelRequest(betterproto.Message):
     # The model to be optimized by the server.
     model: "ExtendedMPModel" = betterproto.message_field(1)
+
+
+@dataclass
+class ReferenceMPModelResponse(betterproto.Message):
+    response: "ExtendedMPModelResponse" = betterproto.message_field(1)
+
+
+@dataclass
+class ExtendedMPModelResponse(betterproto.Message):
+    name: str = betterproto.string_field(1)
+    concrete_response: "MPSolutionResponse" = betterproto.message_field(2)
+    reference_response: "ReferenceSolutionResponse" = betterproto.message_field(3)
+
+
+@dataclass
+class ReferenceSolutionResponse(betterproto.Message):
+    solver_model_solution: "MPSolutionResponse" = betterproto.message_field(1)
+    solver_model_request: "MPModelProto" = betterproto.message_field(2)
+    variable_value: List["NamedValue"] = betterproto.message_field(3)
+    expression_value: List["NamedValue"] = betterproto.message_field(4)
+
+
+@dataclass
+class NamedValue(betterproto.Message):
+    name: str = betterproto.string_field(1)
+    value: float = betterproto.double_field(2)

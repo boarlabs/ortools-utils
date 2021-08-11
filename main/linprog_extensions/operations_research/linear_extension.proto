@@ -136,9 +136,9 @@ message ReferenceMPModel {
 
 message ExtendedMPModel {
     
-    optional MPModelProto concrete_model =1;
-    optional ReferenceMPModel reference_model =2;
-    optional ExpressionMPModel expression_model =3;
+    optional MPModelProto concrete_model = 1;
+    optional ReferenceMPModel reference_model = 2;
+    optional ExpressionMPModel expression_model = 3;
 
 }
 
@@ -147,12 +147,27 @@ message ReferenceMPModelRequest {
     optional ExtendedMPModel model = 1;
 }
 
-//so we want to make a repetaed referencempmodel requests, so on the other side it would need to get them all and then figure out what to do
+message ReferenceMPModelResponse {
+    optional ExtendedMPModelResponse response = 1;
+}
 
-// need to add an rpc to return the concerete mip model
+message ExtendedMPModelResponse {
 
-// how to acount for  model.parent.all_childs.output[k]
+    optional string name = 1;
+    optional MPSolutionResponse concrete_response = 2;
+    optional ReferenceSolutionResponse reference_response = 3;
 
+}
 
+message ReferenceSolutionResponse {
+    optional MPSolutionResponse solver_model_solution = 1;
+    optional MPModelProto solver_model_request = 2;
+    repeated NamedValue variable_value = 3;
+    repeated NamedValue expression_value = 4;
 
+}
 
+message NamedValue {
+    optional string name = 1;
+    optional double value = 2;
+}
