@@ -1,7 +1,14 @@
 from __future__ import annotations
 from typing import List, Any, TypeVar, Callable, Type, cast, Optional
 
-from operations_research import linear_solver_pb2
+from operations_research.linear_solver_pb2 import(
+    MPModelProto,
+    MPSolutionResponse,
+)
+
+from operations_research.linear_extension_pb2 import(
+    NamedValue,
+)
 
 from . import MipVariableArray
 
@@ -15,8 +22,7 @@ class MipModel:
         self,
         name: Optional[str] = '',
         maximize: Optional[bool]= False,
-    ):
-        
+    ): 
         self.name = name
         self.maximize= maximize
         # maybe later I can edit the init so that one could instantiate with vairables, etc., provided.
@@ -27,7 +33,9 @@ class MipModel:
         self.mipmodels = list()
 
         self.parent_mipmodel = None
-        self.model = linear_solver_pb2.MPModelProto()
+        self.model = MPModelProto()
+        self.solution_response_vars = list()
+        self.solution_response_exprs = list()
         # self.model_var_end_index = None
         # why we needed this? seems related to adding one mipmodel to another?
         return
@@ -139,6 +147,28 @@ class MipModel:
         return
 
 
+    def assemble_response(self):
+        for variable in self.varibale_pointers:
+            self.solution_response_vars.append( 
+                NamedValue(
+                    name = variable.name,
+                    value = variable.return_response(),
+                )
+            )
+
+        for expression in self.expressions:
+            self.solution_response_exprs.append(
+                NamedValue(
+                    name = expression.name,
+                    value = expression.return_response(),
+                )
+            )
+        return
+
+## so I want to create the LISTS of variables and Expressions for the MIPMODELS here
+
+
+        
     # def update_variable(
     #     self,
     #     variable_pointer,

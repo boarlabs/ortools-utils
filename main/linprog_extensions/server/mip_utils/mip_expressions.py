@@ -53,6 +53,7 @@ class MipExpression:
         self._mipmodel = None
         self.constraint_pointers = list()
         self.mipmodel_attached = False
+        self.variable_response = None
 
         # we will have up to two constraints for the lower bound and upper bound limits
         if (lower_bound is not None) and  not(lower_bound == float('-inf')):
@@ -79,15 +80,12 @@ class MipExpression:
             constriant.mipmodel = mipmodel
     
     def list_variable_coefficients(self):
-
         variables, coefficients = self._list_variable_coefficients_recursive(self)
         return variables, coefficients
 
-    def _list_variable_coefficients_recursive(self, expression: None):
-
+    def _list_variable_coefficients_recursive(self, expression= None):
         var_list = list()
         coef_list = list()
-
         if hasattr(expression, "variable_list"):
             index = 0
             for variable in expression.variable_list:
@@ -100,22 +98,17 @@ class MipExpression:
                     for coefficient in coefficients
                 ]
                 index += 1
-
         else:
-
             if isinstance(expression, MipVariablePointer):
                 var_list.append(expression)
                 coef_list = [1]
-
         return var_list, coef_list
 
     def _recursive_rhs_calculator(
         self, expression_term, coefficient, lower_bound, upper_bound
     ):
-
         updated_lb = lower_bound
         updated_ub = upper_bound
-
         if hasattr(expression_term, "variable_list"):
             for index in range(len(expression_term.variable_list)):
                 updated_lb, updated_ub = self._recursive_rhs_calculator(
@@ -125,19 +118,15 @@ class MipExpression:
                     updated_ub,
                 )
         else:
-
             if isinstance(expression_term, MipParameterPointer):
-
                 if updated_lb is not None:
                     updated_lb += -coefficient * expression_term.value
-
                 if updated_ub is not None:
                     updated_ub += -coefficient * expression_term.value
 
         return updated_lb, updated_ub
 
     def adjust_right_handside_for_paramters(self, lower_bound, upper_bound):
-
         updated_lb = lower_bound
         updated_ub = upper_bound
 
@@ -267,7 +256,6 @@ class MipExpression:
         self.mipmodel_attached = True
         return
 
-
     def _add_mipmodel_from_variables(self):
 
         """
@@ -282,6 +270,17 @@ class MipExpression:
         self.mipmodel = mipmodel
         return 
 
+    def return_response(self):
+        index = 0
+        expr_value = 0
+        for variable in self.variable_list:
+            variable_value = variable.return_response()
+            term_value = variable_value * self.variable_coefficients[index]
+            expr_value += term_value
+        
+        self.variable_response = expr_value
+        return self.variable_response
+    
     
 
 
