@@ -1001,25 +1001,25 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
             elif model_request.model.expression_model:
                 model_request.model.expression_model.mipmodel.assemble_response()
                 model_response.response.name = model_request.model.expression_model.name
-                model_response.response.reference_response.variable_value.append(
+                model_response.response.reference_response.variable_value.extend(
                    model_request.model.expression_model.mipmodel.solution_response_vars
                 )
-                model_response.response.reference_response.expression_value.append(
+                model_response.response.reference_response.expression_value.extend(
                    model_request.model.expression_model.mipmodel.solution_response_exprs
                 )
 
             elif model_request.model.reference_model:
                 model_request.model.reference_model.mipmodel.assemble_response()
                 model_response.response.name = model_request.model.reference_model.name
-                model_response.response.reference_response.variable_value.append(
+                model_response.response.reference_response.variable_value.extend(
                    model_request.model.reference_model.mipmodel.solution_response_vars
                 )
-                model_response.response.reference_response.expression_value.append(
+                model_response.response.reference_response.expression_value.extend(
                    model_request.model.reference_model.mipmodel.solution_response_exprs
                 )
                 if model_request.model.reference_model.build_final:
-                    model_response.response.reference_response.solver_model_request = self.aggregate_model
-                    model_response.response.reference_response.solver_model_solution = self.response
+                    model_response.response.reference_response.solver_model_request.CopyFrom(self.aggregate_model)
+                    model_response.response.reference_response.solver_model_solution.CopyFrom(self.response)
                         
             self.solution_responses.append(model_response)
         return
