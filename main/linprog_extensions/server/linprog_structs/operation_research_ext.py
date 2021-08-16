@@ -48,7 +48,11 @@ from .operations_research import(
 
 
 from operations_research.linear_solver_pb2 import(
-    MPSolutionResponse as MPSolutionResponse_pb2
+    MPSolutionResponse as MPSolutionResponse_pb2,
+)
+
+from operations_research.linear_extension_pb2 import(
+    ReferenceMPModelResponse as ReferenceMPModelResponse_pb2,
 )
 
 T = TypeVar("T")
@@ -900,6 +904,7 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
         self.populate_hierarchy()
         self.aggregate_model = None
         self.aggregate_model_request_index = None
+        self.solution_responses = list()
         return
 
     @staticmethod
@@ -908,8 +913,7 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
 
         return ReferenceMPModelRequestStreem(
             model_requests
-        )
-    
+        )   
 
     def configure_references(self):
 
@@ -949,7 +953,6 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
             
         return
 
-
     def build_final_mipmodel(self):
         request_index = 0
         for model_request in self.model_requests:
@@ -966,7 +969,6 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
             ValueError("aggregate model could not be built")
         return
 
-
     def solve_final_model(self):
         ## ToDo: Need to move this out of this place maybe to the service 
 
@@ -979,7 +981,6 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
         self.response = response
         return 
     
-
     def distribute_results(self):
         final_request = self.model_requests[self.aggregate_model_request_index]
         var_list = final_request.model.reference_model.mipmodel.varibale_pointers
@@ -987,11 +988,39 @@ class ReferenceMPModelRequestStreem(HierarchyMixin, Container, SimpleBase):
             variable.extract_response(self.response)
         
         for model_request in self.model_requests:
+            model_response = ReferenceMPModelResponse_pb2()
             if model_request.model.concrete_model:
                 model_request.model.concrete_model.mipmodel.assemble_response()
+                model_response.response.name = model_request.model.concrete_model.name
+                model_response.response.concrete_response.variable_value.extend(
+                    [
+                        variable.value for variable in model_request.model.concrete_model.mipmodel.solution_response_vars
+                    ]
+                )
+
             elif model_request.model.expression_model:
                 model_request.model.expression_model.mipmodel.assemble_response()
+                model_response.response.name = model_request.model.expression_model.name
+                model_response.response.reference_response.variable_value.append(
+                   model_request.model.expression_model.mipmodel.solution_response_vars
+                )
+                model_response.response.reference_response.expression_value.append(
+                   model_request.model.expression_model.mipmodel.solution_response_exprs
+                )
+
             elif model_request.model.reference_model:
                 model_request.model.reference_model.mipmodel.assemble_response()
+                model_response.response.name = model_request.model.reference_model.name
+                model_response.response.reference_response.variable_value.append(
+                   model_request.model.reference_model.mipmodel.solution_response_vars
+                )
+                model_response.response.reference_response.expression_value.append(
+                   model_request.model.reference_model.mipmodel.solution_response_exprs
+                )
+                if model_request.model.reference_model.build_final:
+                    model_response.response.reference_response.solver_model_request = self.aggregate_model
+                    model_response.response.reference_response.solver_model_solution = self.response
+                        
+            self.solution_responses.append(model_response)
         return
 

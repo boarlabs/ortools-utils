@@ -6,6 +6,10 @@ from operations_research.linear_solver_pb2 import(
     MPSolutionResponse,
 )
 
+from operations_research.linear_extension_pb2 import(
+    NamedValue,
+)
+
 from . import MipVariableArray
 
 # import grpc
@@ -30,7 +34,8 @@ class MipModel:
 
         self.parent_mipmodel = None
         self.model = MPModelProto()
-        self.solution_response = None
+        self.solution_response_vars = list()
+        self.solution_response_exprs = list()
         # self.model_var_end_index = None
         # why we needed this? seems related to adding one mipmodel to another?
         return
@@ -143,14 +148,24 @@ class MipModel:
 
 
     def assemble_response(self):
-        self.solution_response = MPSolutionResponse()
         for variable in self.varibale_pointers:
-            self.solution_response.variable_value.append(variable.return_response())
+            self.solution_response_vars.append( 
+                NamedValue(
+                    name = variable.name,
+                    value = variable.return_response(),
+                )
+            )
 
         for expression in self.expressions:
-            expression.return_response()
+            self.solution_response_exprs.append(
+                NamedValue(
+                    name = expression.name,
+                    value = expression.return_response(),
+                )
+            )
         return
 
+## so I want to create the LISTS of variables and Expressions for the MIPMODELS here
 
 
         
