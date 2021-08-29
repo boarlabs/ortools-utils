@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 ./server/server_main.py
+python3 /linprog-service/server/server_main.py

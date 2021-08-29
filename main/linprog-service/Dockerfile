@@ -25,6 +25,8 @@ RUN find . -type f -exec sed -i 's/$(UNIX_GLPK_DIR)\/lib\/libglpk.a/-L$(UNIX_GLP
 
 
 RUN make python 
+
+RUN make install_python
 # RUN make test_python
 
  
