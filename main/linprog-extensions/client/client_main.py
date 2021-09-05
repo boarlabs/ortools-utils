@@ -11,7 +11,7 @@ from operations_research.linprog_service_pb2_grpc import(
     LinProgServiceStub
 )
 
-from basic_model_instantiation_from_proto import(
+from client.basic_model_instantiation_from_proto import(
     instantiate_model
 )
 
@@ -30,12 +30,15 @@ def request_iterator(request):
 
 def send_request(channel, request):
     stub = create_stub(channel)
-
+    print(len(request))
 
     response = stub.MILPReferenceModel(request_iterator(request))
+    solution_list = list()
+    for solution in response:
+        solution_list.append(solution)
 
     logging.info("client received response")
-    return  response
+    return  
 
 
 
@@ -58,7 +61,13 @@ if __name__ == "__main__":
     else:
         target = '0.0.0.0:50051'
 
+    target = '18.117.161.117:50051'
+
+
     request = instantiate_model()
+
+    logging.info("client instantiated model")
+
 
     with grpc.insecure_channel(target) as channel:
         response = send_request(channel, request)

@@ -1,14 +1,14 @@
 import numpy as np
 import pandas as pd
 
-# from flat_block_classes_pyoenviron import Model, Collection, Generator, Load, Solver
+# from ..context import operations_research
 from operations_research.linear_extension_pb2 import(
     ReferenceMPModel,
     ExtendedMPModel,
     ReferenceMPModelRequest,
 )
 
-from basic_model_defenition_from_proto import(
+from .basic_model_defenition_from_proto import(
     Generator,
     Load,
     Collection,
@@ -16,7 +16,7 @@ from basic_model_defenition_from_proto import(
 
 def instantiate_model():
 
-    data_directory_path = "./client/sample_data"
+    data_directory_path = "./data"
     data_file_name = "asset_data.xlsx"
 
     # Generator names in excel file are non-unique
@@ -24,7 +24,7 @@ def instantiate_model():
     load_data = pd.read_excel(f"{data_directory_path}/{data_file_name}", sheet_name="Load", index_col=0)
 
     # Model
-    instance = ReferenceMPModel()
+    instance = ReferenceMPModel(name= "problem_instance")
     instance.build_final = True
 
     # Sets
@@ -50,7 +50,7 @@ def instantiate_model():
 
     load_params = {
         "name": "load_0",
-        "load": load_data["Load Profile"] * 0.9 * gen_data["Available Capacity"].sum()
+        "load": 0.05 *load_data["Load Profile"] * 0.9 * gen_data["Available Capacity"].sum()
     }
 
     collection_params = {

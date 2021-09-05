@@ -20,10 +20,10 @@ class LinProgServiceStub(object):
                 request_serializer=operations__research_dot_linear__solver__pb2.MPModelRequest.SerializeToString,
                 response_deserializer=operations__research_dot_linear__solver__pb2.MPSolutionResponse.FromString,
                 )
-        self.MILPReferenceModel = channel.stream_unary(
+        self.MILPReferenceModel = channel.stream_stream(
                 '/operations_research.LinProgService/MILPReferenceModel',
                 request_serializer=operations__research_dot_linear__extension__pb2.ReferenceMPModelRequest.SerializeToString,
-                response_deserializer=operations__research_dot_linear__solver__pb2.MPSolutionResponse.FromString,
+                response_deserializer=operations__research_dot_linear__extension__pb2.ReferenceMPModelResponse.FromString,
                 )
         self.MILPReferenceBuild = channel.stream_unary(
                 '/operations_research.LinProgService/MILPReferenceBuild',
@@ -61,10 +61,10 @@ def add_LinProgServiceServicer_to_server(servicer, server):
                     request_deserializer=operations__research_dot_linear__solver__pb2.MPModelRequest.FromString,
                     response_serializer=operations__research_dot_linear__solver__pb2.MPSolutionResponse.SerializeToString,
             ),
-            'MILPReferenceModel': grpc.stream_unary_rpc_method_handler(
+            'MILPReferenceModel': grpc.stream_stream_rpc_method_handler(
                     servicer.MILPReferenceModel,
                     request_deserializer=operations__research_dot_linear__extension__pb2.ReferenceMPModelRequest.FromString,
-                    response_serializer=operations__research_dot_linear__solver__pb2.MPSolutionResponse.SerializeToString,
+                    response_serializer=operations__research_dot_linear__extension__pb2.ReferenceMPModelResponse.SerializeToString,
             ),
             'MILPReferenceBuild': grpc.stream_unary_rpc_method_handler(
                     servicer.MILPReferenceBuild,
@@ -109,9 +109,9 @@ class LinProgService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.stream_unary(request_iterator, target, '/operations_research.LinProgService/MILPReferenceModel',
+        return grpc.experimental.stream_stream(request_iterator, target, '/operations_research.LinProgService/MILPReferenceModel',
             operations__research_dot_linear__extension__pb2.ReferenceMPModelRequest.SerializeToString,
-            operations__research_dot_linear__solver__pb2.MPSolutionResponse.FromString,
+            operations__research_dot_linear__extension__pb2.ReferenceMPModelResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

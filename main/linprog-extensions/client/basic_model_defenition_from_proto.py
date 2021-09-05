@@ -1,3 +1,6 @@
+# from ..context import operations_research
+
+from os import name
 from operations_research.linear_solver_pb2 import(
     MPModelProto,
     MPVariableProto,
@@ -29,7 +32,7 @@ class Load:
         self.objective_terms = {}
 
         self.mipmodel.name = self.id
-
+        self.load_ramp = 100
 
         self.load =  params["load"]
 
@@ -41,9 +44,21 @@ class Load:
             ) for idx in interval_set
         ]
 
+        ## I need this to test the constraint creation on the server
+        self.load_ramp = [
+            MPConstraintProto(
+                name= f"load_ramp[{str(idx)}]",
+                coefficient = [1, -1],
+                var_index = [idx+1, idx],
+                lower_bound = self.load_ramp,
+                
+            ) for idx in range(len(interval_set)-1)
+        ]
+
         # [self.mipmodel.variable.add(var) for var in self.net_export]
         self.mipmodel.variable.extend(self.net_export)
-
+        # self.mipmodel.constraint.extend(self.load_ramp)
+        return
 
 
 class Generator:
@@ -200,9 +215,6 @@ class Generator:
         self.objective_terms["marginal_cost"] = self.total_cost
         
 
-
-
-
 class Collection:
     def __init__(
         self,
@@ -217,10 +229,7 @@ class Collection:
         ## Setup
         self.id = params["name"]
         self.objective_terms = {}
-
         self.mipmodel.name = self.id
-
-
         self.interval_set = interval_set
 
         self.component_element_ids = params["component_element_names"] # resources or other collections
@@ -253,7 +262,7 @@ class Collection:
                 [
                     ReferenceMPVariable(
                         var_name = f"net_export[{idx}]",
-                        model_name = "parent.{component_element}",
+                        model_name = f"parent.{component_element}",
                         )  for component_element in self.component_element_ids 
                 ]
             ) 
@@ -272,7 +281,7 @@ class Collection:
 
         self.sum_of_component_net_exports= [ 
             MPExpression(
-                name = f"sum_of_component_net_exports[{idx}]",
+                name = f"sum_of_component_net_exports[{idx+1}]",
                 variables = self.collection_components_net_exports[idx],    
                 variable_coefficients = [1]*len(self.collection_components_net_exports[idx]),
             ) for idx in range(len(interval_set))
@@ -297,10 +306,22 @@ class Collection:
             ReferenceMPConstraint(
                 lower_bound = 0,
                 upper_bound = 0,
-                name = f"con_coupling_net_export[{idx}]",
-                expression_coefficients = [-1],
-                expressions = [self.sum_of_component_net_exports[idx]],
-                variables = [self.net_export[idx]],
-                var_coefficients = [1],
+                name = f"con_coupling_net_export[{idx+1}]",
+                variable_references = [
+                    ReferenceMPVariable(
+                        var_name = f"net_export[{idx+1}]",
+                    ),
+                    ReferenceMPVariable(
+                        var_name = f"sum_of_component_net_exports[{idx+1}]"
+                    ),
+                ],
+                variable_coefficients = [1, -1], 
+
+                # expression_coefficients = [-1],
+                # expressions = [self.sum_of_component_net_exports[idx]],
+                # variables = [self.net_export[idx]],
+                # var_coefficients = [1],
             ) for idx in range(len(interval_set))
         ]
+
+        self.mipmodel.reference_constraints.extend(self.con_coupling_net_export)
