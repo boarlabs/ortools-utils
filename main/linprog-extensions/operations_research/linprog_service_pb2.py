@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n)operations_research/linprog_service.proto\x12\x13operations_research\x1a\'operations_research/linear_solver.proto\x1a*operations_research/linear_extension.proto2\xcb\x02\n\x0eLinProgService\x12[\n\tMILPModel\x12#.operations_research.MPModelRequest\x1a\'.operations_research.MPSolutionResponse\"\x00\x12o\n\x12MILPReferenceModel\x12,.operations_research.ReferenceMPModelRequest\x1a\'.operations_research.MPSolutionResponse\"\x00(\x01\x12k\n\x12MILPReferenceBuild\x12,.operations_research.ReferenceMPModelRequest\x1a#.operations_research.MPModelRequest\"\x00(\x01\x62\x06proto3'
+  serialized_pb=b'\n)operations_research/linprog_service.proto\x12\x13operations_research\x1a\'operations_research/linear_solver.proto\x1a*operations_research/linear_extension.proto2\xd3\x02\n\x0eLinProgService\x12[\n\tMILPModel\x12#.operations_research.MPModelRequest\x1a\'.operations_research.MPSolutionResponse\"\x00\x12w\n\x12MILPReferenceModel\x12,.operations_research.ReferenceMPModelRequest\x1a-.operations_research.ReferenceMPModelResponse\"\x00(\x01\x30\x01\x12k\n\x12MILPReferenceBuild\x12,.operations_research.ReferenceMPModelRequest\x1a#.operations_research.MPModelRequest\"\x00(\x01\x62\x06proto3'
   ,
   dependencies=[operations__research_dot_linear__solver__pb2.DESCRIPTOR,operations__research_dot_linear__extension__pb2.DESCRIPTOR,])
 
@@ -39,7 +39,7 @@ _LINPROGSERVICE = _descriptor.ServiceDescriptor(
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
   serialized_start=152,
-  serialized_end=483,
+  serialized_end=491,
   methods=[
   _descriptor.MethodDescriptor(
     name='MILPModel',
@@ -57,7 +57,7 @@ _LINPROGSERVICE = _descriptor.ServiceDescriptor(
     index=1,
     containing_service=None,
     input_type=operations__research_dot_linear__extension__pb2._REFERENCEMPMODELREQUEST,
-    output_type=operations__research_dot_linear__solver__pb2._MPSOLUTIONRESPONSE,
+    output_type=operations__research_dot_linear__extension__pb2._REFERENCEMPMODELRESPONSE,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),

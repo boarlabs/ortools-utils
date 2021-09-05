@@ -6,7 +6,7 @@ package operations_research;
 service LinProgService {
     rpc MILPModel(MPModelRequest) returns (MPSolutionResponse) {};
 
-    rpc MILPReferenceModel(stream ReferenceMPModelRequest) returns (MPSolutionResponse) {};
+    rpc MILPReferenceModel(stream ReferenceMPModelRequest) returns (stream ReferenceMPModelResponse) {};
 
     rpc MILPReferenceBuild(stream ReferenceMPModelRequest) returns(MPModelRequest) {};
 }
