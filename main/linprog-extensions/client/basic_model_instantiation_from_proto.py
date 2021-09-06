@@ -29,9 +29,9 @@ def instantiate_model():
 
     # Sets
     # gen_index = set(gen_data.index)
-    gen_index = range(10)
+    gen_index = range(5)
     # gen_names = [f"gen_name_{idx}" for idx in gen_index]
-    gen_names = [f"gen_name_{idx}" for idx in range(10)]
+    gen_names = [f"gen_name_{idx}" for idx in range(5)]
 
 
     interval_index = set(load_data.index) ## check this

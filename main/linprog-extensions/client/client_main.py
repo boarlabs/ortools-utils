@@ -61,13 +61,16 @@ if __name__ == "__main__":
     else:
         target = '0.0.0.0:50051'
 
-    target = '18.117.161.117:50051'
+    # target = '3.128.179.93:50051'
+    target = 'app.boarlabs.net:50051'
+    # target = "pyortool-service-601248457.us-east-2.elb.amazonaws.com:50051"
 
 
     request = instantiate_model()
 
     logging.info("client instantiated model")
+    credentials = grpc.ssl_channel_credentials()
 
 
-    with grpc.insecure_channel(target) as channel:
+    with grpc.secure_channel(target, credentials) as channel:
         response = send_request(channel, request)
